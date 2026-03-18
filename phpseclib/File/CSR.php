@@ -42,7 +42,7 @@ use phpseclib4\File\Common\Signable;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class CSR implements \ArrayAccess, \Countable, \Iterator, Signable
+class CSR implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
 {
     use \phpseclib4\File\Common\Traits\Extension;
     use \phpseclib4\File\Common\Traits\DN;
@@ -112,12 +112,12 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable
         $decoded = ASN1::decodeBER($csr);
 
         $rules = [];
-        $rules['certificationRequestInfo']['attributes']['*'] = [self::class, 'mapInAttributes'];
-        $rules['certificationRequestInfo']['subject']['rdnSequence']['*']['*'] = [self::class, 'mapInDNs'];
-        $rules['certificationRequestInfo']['subjectPKInfo'] = function(Constructed &$csr) {
+        $rules['certificationRequestInfo']['attributes']['*'] = self::mapInAttributes(...);
+        $rules['certificationRequestInfo']['subject']['rdnSequence']['*']['*'] = self::mapInDNs(...);
+        $rules['certificationRequestInfo']['subjectPKInfo'] = function(Constructed &$csr): void {
             try {
                 $csr = PublicKeyLoader::load($csr->getEncoded());
-            } catch (NoKeyLoadedException $e) {
+            } catch (NoKeyLoadedException) {
             }
         };
 
@@ -149,10 +149,12 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable
     {
         $keys = is_array($attributes) ? array_keys($attributes) : $attributes->keys();
         foreach ($keys as $i) {
-            if ($attributes[$i] instanceof Element || $attributes[$i]['value'] instanceof Element) {
+            if ($attributes[$i] instanceof Element) {
                 continue;
             }
-
+            if ($attributes[$i]['value'] instanceof Element) {
+                continue;
+            }
             $unparsedTest = is_array($attributes[$i]) && isset($attributes[$i]['value']);
             $unparsedTest = $unparsedTest && $attributes[$i]['value'] instanceof Constructed;
             $unparsedTest = $unparsedTest && !$attributes[$i]['value']->hasMapping();
@@ -183,20 +185,19 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable
                 //user_error($id . ' is not a currently supported extension');
                 unset($attributes[$i]);
                 continue;
-            } else {
-                foreach ($value as $i=>$subvalue) {
-                    if ($value[$i] instanceof BaseType) {
-                        ASN1::encodeDER($value[$i], $map);
-                        $value[$i]->enableForcedCache();
-                    } else {
-                        $oldValue = $value[$i] instanceof Constructed ? $value[$i]->toArray() : $value[$i];
-                        $temp = ASN1::encodeDER($value[$i], $map);
-                        $value[$i] = ASN1::map(ASN1::decodeBER($temp), $map);
-                        if ($value[$i] instanceof Constructed) {
-                            $value[$i]->decoded = $oldValue;
-                        }
-                        $value[$i]->enableForcedCache();
+            }
+            foreach ($value as $i=>$subvalue) {
+                if ($value[$i] instanceof BaseType) {
+                    ASN1::encodeDER($value[$i], $map);
+                    $value[$i]->enableForcedCache();
+                } else {
+                    $oldValue = $value[$i] instanceof Constructed ? $value[$i]->toArray() : $value[$i];
+                    $temp = ASN1::encodeDER($value[$i], $map);
+                    $value[$i] = ASN1::map(ASN1::decodeBER($temp), $map);
+                    if ($value[$i] instanceof Constructed) {
+                        $value[$i]->decoded = $oldValue;
                     }
+                    $value[$i]->enableForcedCache();
                 }
             }
         }
@@ -255,7 +256,7 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable
         }
         $rule = [];
         if ($id == 'pkcs-9-at-extensionRequest') {
-            $rule['*'] = [self::class, 'mapInExtensions'];
+            $rule['*'] = self::mapInExtensions(...);
         }
         foreach ($attr['value'] as $key=>$value) {
             $value = &$attr['value'][$key];

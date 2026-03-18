@@ -26,17 +26,14 @@ use phpseclib4\File\X509;
 
 class KeyTransRecipient extends Recipient implements DerivableKey, SearchableKey
 {
-    private ?RSA\PrivateKey $kek = null;
-
     protected static function loadString(string $encoded): Constructed
     {
         //ASN1::disableCacheInvalidation();
         $decoded = ASN1::decodeBER($encoded);
         $rules = [];
-        $rules['keyEncryptionAlgorithm'] = [self::class, 'mapInAlgoParams'];
-        $recipient = ASN1::map($decoded, Maps\KeyTransRecipientInfo::MAP, $rules);
+        $rules['keyEncryptionAlgorithm'] = self::mapInAlgoParams(...);
         //ASN1::enableCacheInvalidation();
-        return $recipient;
+        return ASN1::map($decoded, Maps\KeyTransRecipientInfo::MAP, $rules);
     }
 
     public static function mapInAlgoParams(Constructed $algorithm): void
@@ -45,7 +42,7 @@ class KeyTransRecipient extends Recipient implements DerivableKey, SearchableKey
         $rules = [];
         switch ($algorithm['algorithm']) {
             case 'id-RSAES-OAEP':
-                $rules['maskGenAlgorithm'] = [self::class, 'mapInAlgoParams'];
+                $rules['maskGenAlgorithm'] = self::mapInAlgoParams(...);
                 $map = Maps\RSAES_OAEP_params::MAP;
                 break;
             case 'id-mgf1':
@@ -96,8 +93,6 @@ class KeyTransRecipient extends Recipient implements DerivableKey, SearchableKey
 
     public function toString(): string
     {
-        $recipient = ASN1::encodeDER($this->recipient, Maps\KeyTransRecipientInfo::MAP);
-
-        return $recipient;
+        return ASN1::encodeDER($this->recipient, Maps\KeyTransRecipientInfo::MAP);
     }
 }

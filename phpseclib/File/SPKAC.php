@@ -35,7 +35,7 @@ use phpseclib4\File\Common\Signable;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class SPKAC implements \ArrayAccess, \Countable, \Iterator, Signable
+class SPKAC implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
 {
     use \phpseclib4\File\Common\Traits\ASN1Signature;
 
@@ -129,7 +129,7 @@ class SPKAC implements \ArrayAccess, \Countable, \Iterator, Signable
 
         // OpenSSL produces SPKAC's that are preceded by the string SPKAC=
         $temp = preg_replace('#(?:SPKAC=)|[ \r\n\\\]#', '', $spkac);
-        $temp = preg_match('#^[a-zA-Z\d/+]*={0,2}$#', $temp) ? Strings::base64_decode($temp) : false;
+        $temp = preg_match('#^[a-zA-Z\d/+]*={0,2}$#', (string) $temp) ? Strings::base64_decode($temp) : false;
         if ($temp != false) {
             $spkac = $temp;
         }
@@ -137,10 +137,10 @@ class SPKAC implements \ArrayAccess, \Countable, \Iterator, Signable
         $decoded = ASN1::decodeBER($spkac);
 
         $rules = [];
-        $rules['publicKeyAndChallenge']['spki'] = function(Constructed &$spkac) {
+        $rules['publicKeyAndChallenge']['spki'] = function(Constructed &$spkac): void {
             try {
                 $spkac = PublicKeyLoader::load($spkac->getEncoded());
-            } catch (NoKeyLoadedException $e) {
+            } catch (NoKeyLoadedException) {
             }
         };
 

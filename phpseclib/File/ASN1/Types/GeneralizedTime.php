@@ -20,7 +20,7 @@ namespace phpseclib4\File\ASN1\Types;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class GeneralizedTime extends \DateTime implements BaseType
+class GeneralizedTime extends \DateTime implements BaseType, \Stringable
 {
     use Common;
 

@@ -87,7 +87,7 @@ trait Common
         if (!isset($this->metadata['content'], $this->metadata['rawheader'])) {
             throw new RuntimeException('Encoded data is not available');
         }
-        return strlen($this->metadata['rawheader']) + strlen($this->metadata['content']);
+        return strlen((string) $this->metadata['rawheader']) + strlen((string) $this->metadata['content']);
     }
 
     public function setEncoded(string $header, string $encoded): void
@@ -109,7 +109,7 @@ trait Common
         try {
             $this->getTypeID();
             return true;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
     }

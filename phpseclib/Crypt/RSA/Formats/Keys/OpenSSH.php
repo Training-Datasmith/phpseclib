@@ -102,9 +102,8 @@ abstract class OpenSSH extends Progenitor
         }
 
         $comment = $options['comment'] ?? self::$comment;
-        $RSAPublicKey = 'ssh-rsa ' . base64_encode($RSAPublicKey) . ' ' . $comment;
 
-        return $RSAPublicKey;
+        return 'ssh-rsa ' . base64_encode($RSAPublicKey) . ' ' . $comment;
     }
 
     /**

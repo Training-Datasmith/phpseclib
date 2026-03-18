@@ -119,7 +119,7 @@ abstract class PHP extends Engine
                 );
                 while (strlen($x)) {
                     $temp = $temp->multiply($multiplier);
-                    $temp = $temp->add(new static($this->int2bytes((int) substr($x, 0, static::MAX10LEN)), 256));
+                    $temp = $temp->add(new static(self::int2bytes((int) substr($x, 0, static::MAX10LEN)), 256));
                     $x = substr($x, static::MAX10LEN);
                 }
 
@@ -170,7 +170,7 @@ abstract class PHP extends Engine
         }
 
         if ($this->is_negative) {
-            $result = '-' . $result;
+            return '-' . $result;
         }
 
         return $result;
@@ -190,7 +190,7 @@ abstract class PHP extends Engine
         }
 
         $result = $this->bitwise_small_split(8);
-        $result = implode('', array_map('chr', $result));
+        $result = implode('', array_map(chr(...), $result));
 
         return $this->precision > 0 ?
             str_pad(
@@ -209,13 +209,14 @@ abstract class PHP extends Engine
     {
         $x_size = count($x_value);
         $y_size = count($y_value);
-
         if ($x_size == 0) {
             return [
                 self::VALUE => $y_value,
                 self::SIGN => $y_negative,
             ];
-        } elseif ($y_size == 0) {
+        }
+
+        if ($y_size == 0) {
             return [
                 self::VALUE => $x_value,
                 self::SIGN => $x_negative,
@@ -288,13 +289,14 @@ abstract class PHP extends Engine
     {
         $x_size = count($x_value);
         $y_size = count($y_value);
-
         if ($x_size == 0) {
             return [
                 self::VALUE => $y_value,
                 self::SIGN => !$y_negative,
             ];
-        } elseif ($y_size == 0) {
+        }
+
+        if ($y_size == 0) {
             return [
                 self::VALUE => $x_value,
                 self::SIGN => $x_negative,
@@ -495,7 +497,7 @@ abstract class PHP extends Engine
     protected function divideHelper(PHP $y): array
     {
         if (count($y->value) == 1) {
-            [$q, $r] = $this->divide_digit($this->value, $y->value[0]);
+            [$q, $r] = self::divide_digit($this->value, $y->value[0]);
             $quotient = new static();
             $remainder = new static();
             $quotient->value = $q;
@@ -682,8 +684,6 @@ abstract class PHP extends Engine
 
     /**
      * Convert an array / boolean to a PHP BigInteger object
-     *
-     * @return static
      */
     protected function convertToObj(array $arr): PHP
     {
@@ -698,8 +698,6 @@ abstract class PHP extends Engine
      * Normalize
      *
      * Removes leading zeros and truncates (if necessary) to maintain the appropriate precision
-     *
-     * @return static
      */
     protected function normalize(PHP $result): PHP
     {
@@ -910,7 +908,7 @@ abstract class PHP extends Engine
         try {
             $class = static::$modexpEngine[static::class];
             return $class::powModHelper($this, $e, $n, static::class);
-        } catch (\Exception $err) {
+        } catch (\Exception) {
             return PHP\DefaultEngine::powModHelper($this, $e, $n, static::class);
         }
     }
@@ -1051,8 +1049,6 @@ abstract class PHP extends Engine
         $r_value = &$r->value;
         for ($i = 0, $r_length = count($r_value); $i < $r_length; ++$i) {
             $temp = ~$r_value[$i] & static::MAX_DIGIT;
-            for ($j = 1; ($temp >> $j) & 1; ++$j) {
-            }
             if ($j <= static::BASE) {
                 break;
             }
@@ -1115,8 +1111,6 @@ abstract class PHP extends Engine
      * Negate
      *
      * Given $k, returns -$k
-     *
-     * @return static
      */
     public function negate(): PHP
     {
@@ -1142,7 +1136,7 @@ abstract class PHP extends Engine
         $width = (int)($split / static::BASE);
         if (!$width) {
             $arr = $this->bitwise_small_split($split);
-            return array_map(function ($digit) {
+            return array_map(function (int $digit): static {
                 $temp = new static();
                 $temp->value = $digit != 0 ? [$digit] : [];
                 return $temp;

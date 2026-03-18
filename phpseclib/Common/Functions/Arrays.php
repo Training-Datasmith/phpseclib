@@ -145,10 +145,9 @@ abstract class Arrays
                 foreach ($root as $key=>$val) {
                     if (empty($path)) {
                         return $val;
-                    } else {
-                        $val = &self::subArrayWithWildcards($root[$key], $path, $create);
-                        return $val;
                     }
+                    $val = &self::subArrayWithWildcards($root[$key], $path, $create);
+                    return $val;
                 }
                 $loc = implode('/', array_slice($parts, 0, $k));
                 throw new RuntimeException("$loc wasn't found");

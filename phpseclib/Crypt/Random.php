@@ -50,9 +50,9 @@ abstract class Random
 
         try {
             return random_bytes($length);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // random_compat will throw an Exception, which in PHP 5 does not implement Throwable
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // If a sufficient source of randomness is unavailable, random_bytes() will throw an
             // object that implements the Throwable interface (Exception, TypeError, Error).
             // We don't actually need to do anything here. The string() method should just continue
@@ -142,28 +142,15 @@ abstract class Random
             // ciphers are used as per the nist.gov link below. also, see this link:
             //
             // http://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator#Designs_based_on_cryptographic_primitives
-            switch (true) {
-                case class_exists('\phpseclib4\Crypt\AES'):
-                    $crypto = new AES('ctr');
-                    break;
-                case class_exists('\phpseclib4\Crypt\Twofish'):
-                    $crypto = new Twofish('ctr');
-                    break;
-                case class_exists('\phpseclib4\Crypt\Blowfish'):
-                    $crypto = new Blowfish('ctr');
-                    break;
-                case class_exists('\phpseclib4\Crypt\TripleDES'):
-                    $crypto = new TripleDES('ctr');
-                    break;
-                case class_exists('\phpseclib4\Crypt\DES'):
-                    $crypto = new DES('ctr');
-                    break;
-                case class_exists('\phpseclib4\Crypt\RC4'):
-                    $crypto = new RC4();
-                    break;
-                default:
-                    throw new RuntimeException(__CLASS__ . ' requires at least one symmetric cipher be loaded');
-            }
+            $crypto = match (true) {
+                class_exists('\phpseclib4\Crypt\AES') => new AES('ctr'),
+                class_exists('\phpseclib4\Crypt\Twofish') => new Twofish('ctr'),
+                class_exists('\phpseclib4\Crypt\Blowfish') => new Blowfish('ctr'),
+                class_exists('\phpseclib4\Crypt\TripleDES') => new TripleDES('ctr'),
+                class_exists('\phpseclib4\Crypt\DES') => new DES('ctr'),
+                class_exists('\phpseclib4\Crypt\RC4') => new RC4(),
+                default => throw new RuntimeException(self::class . ' requires at least one symmetric cipher be loaded'),
+            };
 
             $crypto->setKey(substr($key, 0, $crypto->getKeyLength() >> 3));
             $crypto->setIV(substr($iv, 0, $crypto->getBlockLength() >> 3));

@@ -121,17 +121,15 @@ class DES extends BlockCipher
      * The Key Schedule
      *
      * @see self::setupKey()
-     * @var array
      */
-    private $keys;
+    private ?array $keys = null;
 
     /**
      * Key Cache "key"
      *
      * @see self::setupKey()
-     * @var array
      */
-    private $kl;
+    private ?array $kl = null;
 
     /**
      * Shuffle table.
@@ -642,11 +640,10 @@ class DES extends BlockCipher
      * {@link http://en.wikipedia.org/wiki/Image:Feistel.png Feistel.png} to get a general
      * idea of what this function does.
      *
-     * @return string
      * @see self::decryptBlock()
      * @see self::encryptBlock()
      */
-    private function processBlock(string $block, int $mode)
+    private function processBlock(string $block, int $mode): string
     {
         static $sbox1, $sbox2, $sbox3, $sbox4, $sbox5, $sbox6, $sbox7, $sbox8, $shuffleip, $shuffleinvip;
         if (!$sbox1) {
@@ -1231,28 +1228,25 @@ class DES extends BlockCipher
             }
         }
 
-        switch ($this->des_rounds) {
-            case 3: // 3DES keys
-                $this->keys = [
-                    self::ENCRYPT => array_merge(
-                        $keys[0][self::ENCRYPT],
-                        $keys[1][self::DECRYPT],
-                        $keys[2][self::ENCRYPT]
-                    ),
-                    self::DECRYPT => array_merge(
-                        $keys[2][self::DECRYPT],
-                        $keys[1][self::ENCRYPT],
-                        $keys[0][self::DECRYPT]
-                    ),
-                ];
-                break;
-            // case 1: // DES keys
-            default:
-                $this->keys = [
-                    self::ENCRYPT => $keys[0][self::ENCRYPT],
-                    self::DECRYPT => $keys[0][self::DECRYPT],
-                ];
-        }
+        $this->keys = match ($this->des_rounds) {
+            // 3DES keys
+            3 => [
+                self::ENCRYPT => array_merge(
+                    $keys[0][self::ENCRYPT],
+                    $keys[1][self::DECRYPT],
+                    $keys[2][self::ENCRYPT]
+                ),
+                self::DECRYPT => array_merge(
+                    $keys[2][self::DECRYPT],
+                    $keys[1][self::ENCRYPT],
+                    $keys[0][self::DECRYPT]
+                ),
+            ],
+            default => [
+                self::ENCRYPT => $keys[0][self::ENCRYPT],
+                self::DECRYPT => $keys[0][self::DECRYPT],
+            ],
+        };
     }
 
     /**

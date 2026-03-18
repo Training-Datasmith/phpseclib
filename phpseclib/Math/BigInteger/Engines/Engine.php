@@ -27,7 +27,7 @@ use phpseclib4\Math\BigInteger;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-abstract class Engine implements \JsonSerializable
+abstract class Engine implements \JsonSerializable, \Stringable
 {
     /* final */ protected const PRIMES = [
         3,   5,   7,   11,  13,  17,  19,  23,  29,  31,  37,  41,  43,  47,  53,  59,
@@ -87,10 +87,8 @@ abstract class Engine implements \JsonSerializable
 
     /**
      * Holds the BigInteger's sign
-     *
-     * @var bool
      */
-    protected $is_negative = false;
+    protected bool $is_negative;
 
     /**
      * Precision
@@ -166,10 +164,10 @@ abstract class Engine implements \JsonSerializable
             case 16:
                 if ($base > 0 && $x[0] == '-') {
                     $this->is_negative = true;
-                    $x = substr($x, 1);
+                    $x = substr((string) $x, 1);
                 }
 
-                $x = preg_replace('#^(?:0x)?([A-Fa-f0-9]*).*#s', '$1', $x);
+                $x = preg_replace('#^(?:0x)?([A-Fa-f0-9]*).*#s', '$1', (string) $x);
 
                 $is_negative = false;
                 if ($base < 0 && hexdec($x[0]) >= 8) {
@@ -191,7 +189,7 @@ abstract class Engine implements \JsonSerializable
                 // (?<=^|-)0*: find any 0's that are preceded by the start of the string or by a - (ie. octals)
                 // [^-0-9].*: find any non-numeric characters and then any characters that follow that
                 $this->value = preg_replace('#(?<!^)-.*|(?<=^|-)0*|[^-0-9].*#s', '', (string) $x);
-                if (!strlen($this->value) || $this->value == '-') {
+                if (!strlen((string) $this->value) || $this->value == '-') {
                     $this->value = '0';
                 }
                 $this->initialize($base);
@@ -200,10 +198,10 @@ abstract class Engine implements \JsonSerializable
             case 2:
                 if ($base > 0 && $x[0] == '-') {
                     $this->is_negative = true;
-                    $x = substr($x, 1);
+                    $x = substr((string) $x, 1);
                 }
 
-                $x = preg_replace('#^([01]*).*#s', '$1', $x);
+                $x = preg_replace('#^([01]*).*#s', '$1', (string) $x);
 
                 $temp = new static(Strings::bits2bin($x), 128 * $base); // ie. either -16 or +16
                 $this->value = $temp->value;
@@ -412,12 +410,10 @@ abstract class Engine implements \JsonSerializable
 
     /**
      * Converts a BigInteger to a base-10 number.
-     *
-     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->toString();
+        return (string) $this->toString();
     }
 
     /**
@@ -470,7 +466,6 @@ abstract class Engine implements \JsonSerializable
     /**
      * Set Bitmask
      *
-     * @return static
      * @see self::setPrecision()
      */
     protected static function setBitmask(int $bits): Engine
@@ -500,7 +495,7 @@ abstract class Engine implements \JsonSerializable
         $temp[0] = chr(bindec($msb));
 
         // see if we need to add extra leading 1's
-        $current_bits = strlen($pre_msb) + 8 * strlen($temp) - 8;
+        $current_bits = strlen($pre_msb) + 8 * strlen((string) $temp) - 8;
         $new_bits = $this->precision - $current_bits;
         if ($new_bits <= 0) {
             return $this->normalize(new static($temp, 256));
@@ -511,7 +506,7 @@ abstract class Engine implements \JsonSerializable
 
         self::base256_lshift($leading_ones, $current_bits);
 
-        $temp = str_pad($temp, strlen($leading_ones), chr(0), STR_PAD_LEFT);
+        $temp = str_pad((string) $temp, strlen($leading_ones), chr(0), STR_PAD_LEFT);
 
         return $this->normalize(new static($leading_ones | $temp, 256));
     }
@@ -559,8 +554,6 @@ abstract class Engine implements \JsonSerializable
             }
         } else {
             $temp = ord($bits[0]);
-            for ($i = 0; $temp >> $i; ++$i) {
-            }
             $precision = 8 * strlen($bits) - 8 + $i;
             $mask = chr((1 << ($precision & 0x7)) - 1) . str_repeat(chr(0xFF), $precision >> 3);
         }
@@ -678,11 +671,6 @@ abstract class Engine implements \JsonSerializable
         $e_bits = $e->toBits();
         $e_length = strlen($e_bits);
 
-        // calculate the appropriate window size.
-        // $window_size == 3 if $window_ranges is between 25 and 81, for example.
-        for ($i = 0, $window_size = 1; $i < count($window_ranges) && $e_length > $window_ranges[$i]; ++$window_size, ++$i) {
-        }
-
         $n_value = $n->value;
 
         if (method_exists(static::class, 'generateCustomReduction')) {
@@ -763,10 +751,11 @@ abstract class Engine implements \JsonSerializable
     protected static function randomRangePrimeOuter(Engine $min, Engine $max)
     {
         $compare = $max->compare($min);
-
         if (!$compare) {
             return $min->isPrime() ? $min : false;
-        } elseif ($compare < 0) {
+        }
+
+        if ($compare < 0) {
             // if $min is bigger then $max, swap $min and $max
             $temp = $max;
             $max = $min;
@@ -795,10 +784,11 @@ abstract class Engine implements \JsonSerializable
     protected static function randomRangeHelper(Engine $min, Engine $max): Engine
     {
         $compare = $max->compare($min);
-
         if (!$compare) {
             return $min;
-        } elseif ($compare < 0) {
+        }
+
+        if ($compare < 0) {
             // if $min is bigger then $max, swap $min and $max
             $temp = $max;
             $max = $min;
@@ -811,7 +801,7 @@ abstract class Engine implements \JsonSerializable
 
         $max = $max->subtract($min->subtract(static::$one[static::class]));
 
-        $size = strlen(ltrim($max->toBytes(), chr(0)));
+        $size = strlen(ltrim((string) $max->toBytes(), chr(0)));
 
         /*
             doing $random % $max doesn't work because some numbers will be more likely to occur than others.
@@ -1107,8 +1097,6 @@ abstract class Engine implements \JsonSerializable
      */
     public function createRecurringModuloFunction(): \Closure
     {
-        $class = static::class;
-
         $fqengine = !method_exists(static::$modexpEngine[static::class], 'reduce') ?
             '\\phpseclib4\\Math\\BigInteger\\Engines\\' . static::ENGINE_DIR . '\\DefaultEngine' :
             static::$modexpEngine[static::class];
@@ -1120,7 +1108,6 @@ abstract class Engine implements \JsonSerializable
                 return $r;
             };');
         }
-        $n = $this->value;
         return eval('return function(' . static::class . ' $x) use ($n, $fqengine, $class) {
             $r = new $class();
             $r->value = $fqengine::reduce($x->value, $n, $class);

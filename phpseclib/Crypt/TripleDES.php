@@ -101,19 +101,15 @@ class TripleDES extends DES
 
     /**
      * Internal flag whether using self::MODE_3CBC or not
-     *
-     * @var bool
      */
-    private $mode_3cbc;
+    private ?bool $mode_3cbc = null;
 
     /**
      * The \phpseclib4\Crypt\DES objects
      *
      * Used only if $mode_3cbc === true
-     *
-     * @var array
      */
-    private $des;
+    private ?array $des = null;
 
     /**
      * Default Constructor.
@@ -178,18 +174,17 @@ class TripleDES extends DES
     }
 
     /**
-     * Test for engine validity
-     *
-     * This is mainly just a wrapper to set things up for \phpseclib4\Crypt\Common\SymmetricKey::isValidEngine()
-     *
-<<<<<<< HEAD
-     * @see \phpseclib4\Crypt\Common\SymmetricKey::__construct()
-=======
-     * @see Common\SymmetricKey::__construct()
-     * @param int $engine
-     * @return bool
->>>>>>> 3.0
-     */
+    * Test for engine validity
+    *
+    * This is mainly just a wrapper to set things up for \phpseclib4\Crypt\Common\SymmetricKey::isValidEngine()
+    *
+    <<<<<<< HEAD
+    * @see \phpseclib4\Crypt\Common\SymmetricKey::__construct()
+    =======
+    * @see Common\SymmetricKey::__construct()
+    * @return bool
+    >>>>>>> 3.0
+    */
     protected function isValidEngineHelper(int $engine): bool
     {
         if ($engine == self::ENGINE_OPENSSL) {
@@ -333,7 +328,6 @@ class TripleDES extends DES
      * Decrypts a message.
      *
      * @see Common\SymmetricKey::decrypt()
-     * @param string $ciphertext
      */
     public function decrypt(string $ciphertext): string
     {

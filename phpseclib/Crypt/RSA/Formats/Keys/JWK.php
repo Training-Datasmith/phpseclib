@@ -42,7 +42,10 @@ abstract class JWK extends Progenitor
         $count = $publicCount = 0;
         $vars = ['n', 'e', 'd', 'p', 'q', 'dp', 'dq', 'qi'];
         foreach ($vars as $var) {
-            if (!isset($key->$var) || !is_string($key->$var)) {
+            if (!isset($key->$var)) {
+                continue;
+            }
+            if (!is_string($key->$var)) {
                 continue;
             }
             $count++;

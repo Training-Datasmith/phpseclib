@@ -37,11 +37,7 @@ trait Extension
 {
     private static function getMapping(string $extnId): array|true|null
     {
-        if (isset(self::$extensions[$extnId])) {
-            return self::$extensions[$extnId];
-        }
-
-        return match ($extnId) {
+        return self::$extensions[$extnId] ?? match ($extnId) {
             'id-ce-keyUsage' => Maps\KeyUsage::MAP,
             'id-ce-basicConstraints' => Maps\BasicConstraints::MAP,
             'id-ce-subjectKeyIdentifier' => Maps\KeyIdentifier::MAP,
@@ -185,7 +181,7 @@ trait Extension
                     new Element($ext['extnValue']->value) :
                     $temp;
             }
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $ext['extnValue'] = new Element($ext['extnValue']->value);
         }
 
@@ -261,7 +257,7 @@ trait Extension
                 case 'id-pe-qcStatements':
                     $oldValue = $value instanceof Constructed ? $value->toArray() : $value;
                     $path = '*';
-                    Arrays::subArrayMapWithWildcards($value, $path, function (Choice|Element|array $val): Constructed|Element|array {
+                    Arrays::subArrayMapWithWildcards($value, $path, function (Choice|Element|array $val): \phpseclib4\File\ASN1\Element|array {
                         if ($val instanceof Element || "$val[statementId]" != 'id-etsi-qcs-QcLimitValue') {
                             return $val;
                         }
@@ -286,16 +282,15 @@ trait Extension
                 //user_error($id . ' is not a currently supported extension');
                 unset($extensions[$i]);
                 continue;
-            } else {
-                if ($value instanceof BaseType) {
-                    if ($value instanceof Constructed) {
-                        $value->invalidateCache();
-                    }
-                    ASN1::encodeDER($value, $map);
-                } else {
-                    $temp = ASN1::encodeDER($value, $map);
-                    $value = ASN1::map(ASN1::decodeBER($temp), $map);
+            }
+            if ($value instanceof BaseType) {
+                if ($value instanceof Constructed) {
+                    $value->invalidateCache();
                 }
+                ASN1::encodeDER($value, $map);
+            } else {
+                $temp = ASN1::encodeDER($value, $map);
+                $value = ASN1::map(ASN1::decodeBER($temp), $map);
             }
 
             if (isset($oldValue) && $value instanceof Constructed) {

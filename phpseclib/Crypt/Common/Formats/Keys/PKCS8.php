@@ -49,17 +49,13 @@ abstract class PKCS8 extends PKCS
 
     /**
      * OIDs loaded
-     *
-     * @var bool
      */
-    private static $oidsLoaded = false;
+    private static bool $oidsLoaded = false;
 
     /**
      * Binary key flag
-     *
-     * @var bool
      */
-    private static $binary = false;
+    private static bool $binary = false;
 
     /**
      * Initialize static variables
@@ -87,8 +83,8 @@ abstract class PKCS8 extends PKCS
      */
     protected static function load(string|array $key, #[SensitiveParameter] ?string $password = null): array
     {
-        $isPublic = strpos($key, 'PUBLIC') !== false;
-        $isPrivate = strpos($key, 'PRIVATE') !== false;
+        $isPublic = str_contains($key, 'PUBLIC');
+        $isPrivate = str_contains($key, 'PRIVATE');
 
         $decoded = self::preParse($key);
 
@@ -152,7 +148,7 @@ abstract class PKCS8 extends PKCS
         // bit strings wanting a non-zero amount of bits trimmed are not supported
         try {
             $public = ASN1::map($decoded, Maps\PublicKeyInfo::MAP)->toArray();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $public = false;
         }
 
@@ -162,7 +158,7 @@ abstract class PKCS8 extends PKCS
             }
 
             if ("$public[publicKey]"[0] != "\0") {
-                throw new UnexpectedValueException('The first byte of the public key should be null - not ' . bin2hex($public['publicKey'][0]));
+                throw new UnexpectedValueException('The first byte of the public key should be null - not ' . bin2hex((string) $public['publicKey'][0]));
             }
             if (is_array(static::OID_NAME)) {
                 if (!in_array($public['publicKeyAlgorithm']['algorithm'], static::OID_NAME)) {

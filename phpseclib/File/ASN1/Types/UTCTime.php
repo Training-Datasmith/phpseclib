@@ -20,7 +20,7 @@ namespace phpseclib4\File\ASN1\Types;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class UTCTime extends \DateTime implements BaseType
+class UTCTime extends \DateTime implements BaseType, \Stringable
 {
     use Common;
 

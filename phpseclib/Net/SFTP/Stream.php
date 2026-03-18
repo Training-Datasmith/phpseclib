@@ -98,7 +98,7 @@ class Stream
         if (in_array($protocol, stream_get_wrappers(), true)) {
             return false;
         }
-        return stream_wrapper_register($protocol, get_called_class());
+        return stream_wrapper_register($protocol, static::class);
     }
 
     /**
@@ -121,7 +121,7 @@ class Stream
      *
      * @return string
      */
-    protected function parse_path(string $path)
+    protected function parse_path(string $path): false|string
     {
         $orig = $path;
         $url = parse_url($path) + ['port' => 22];
@@ -129,7 +129,7 @@ class Stream
         $keys = ['scheme', 'host', 'port', 'user', 'pass', 'path', 'query', 'fragment'];
         foreach ($keys as $key) {
             if (isset($url[$key])) {
-                $$key = $url[$key];
+                ${$key} = $url[$key];
             }
         }
 
@@ -243,10 +243,9 @@ class Stream
         if ($this->size === false) {
             if ($this->mode[0] == 'r') {
                 return false;
-            } else {
-                $this->sftp->touch($path);
-                $this->size = 0;
             }
+            $this->sftp->touch($path);
+            $this->size = 0;
         } else {
             switch ($this->mode[0]) {
                 case 'x':
@@ -305,7 +304,7 @@ class Stream
      *
      * @return int|false
      */
-    private function _stream_write(string $data)
+    private function _stream_write(string $data): false|int
     {
         switch ($this->mode) {
             case 'r':
@@ -414,7 +413,7 @@ class Stream
      *
      * @return resource
      */
-    private function _stream_cast(int $cast_as)
+    private function _stream_cast()
     {
         return $this->sftp->fsock;
     }
@@ -422,7 +421,7 @@ class Stream
     /**
      * Advisory file locking
      */
-    private function _stream_lock(int $operation): bool
+    private function _stream_lock(): bool
     {
         return false;
     }
@@ -481,7 +480,7 @@ class Stream
      *                string     longname
      *                ATTRS      attrs
      */
-    private function _dir_opendir(string $path, int $options): bool
+    private function _dir_opendir(string $path): bool
     {
         $path = $this->parse_path($path);
         if ($path === false) {
@@ -543,7 +542,7 @@ class Stream
      * STREAM_MKDIR_RECURSIVE is supposed to be set. Also, when I try it out with rmdir() I get 8 as
      * $options. What does 8 correspond to?
      */
-    private function _rmdir(string $path, int $options): bool
+    private function _rmdir(string $path): bool
     {
         $path = $this->parse_path($path);
         if ($path === false) {
@@ -568,11 +567,7 @@ class Stream
      */
     private function _stream_stat(): bool
     {
-        $results = $this->sftp->stat($this->path);
-        if ($results === false) {
-            return false;
-        }
-        return $results;
+        return $this->sftp->stat($this->path);
     }
 
     /**
@@ -602,12 +597,7 @@ class Stream
             return false;
         }
 
-        $results = $flags & STREAM_URL_STAT_LINK ? $this->sftp->lstat($path) : $this->sftp->stat($path);
-        if ($results === false) {
-            return false;
-        }
-
-        return $results;
+        return $flags & STREAM_URL_STAT_LINK ? $this->sftp->lstat($path) : $this->sftp->stat($path);
     }
 
     /**
@@ -631,7 +621,7 @@ class Stream
      * STREAM_OPTION_WRITE_BUFFER isn't supported for the same reason stream_flush isn't.
      * The other two aren't supported because of limitations in \phpseclib4\Net\SFTP.
      */
-    private function _stream_set_option(int $option, int $arg1, int $arg2): bool
+    private function _stream_set_option(): bool
     {
         return false;
     }

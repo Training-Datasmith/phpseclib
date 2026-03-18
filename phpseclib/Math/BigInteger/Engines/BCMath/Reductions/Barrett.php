@@ -103,7 +103,7 @@ abstract class Barrett extends Base
         $lsd = substr($n, -$cutoff);
         $msd = substr($n, 0, -$cutoff);
 
-        $temp = bcmul($msd, $m1, 0); // m.length + (m.length >> 1)
+        $temp = bcmul($msd, (string) $m1, 0); // m.length + (m.length >> 1)
         $n = bcadd($lsd, $temp, 0); // m.length + (m.length >> 1) + 1 (so basically we're adding two same length numbers)
         //if ($m_length & 1) {
         //    return self::regularBarrett($n, $m);
@@ -113,7 +113,7 @@ abstract class Barrett extends Base
         $temp = substr($n, 0, -$m_length + 1);
         // if even: ((m.length >> 1) + 2) + (m.length >> 1) == m.length + 2
         // if odd:  ((m.length >> 1) + 2) + (m.length >> 1) == (m.length - 1) + 2 == m.length + 1
-        $temp = bcmul($temp, $u, 0);
+        $temp = bcmul($temp, (string) $u, 0);
         // if even: (m.length + 2) - ((m.length >> 1) + 1) = m.length - (m.length >> 1) + 1
         // if odd:  (m.length + 1) - ((m.length >> 1) + 1) = m.length - (m.length >> 1)
         $temp = substr($temp, 0, -($m_length >> 1) - 1);
@@ -167,7 +167,7 @@ abstract class Barrett extends Base
         }
 
         $temp = substr($x, 0, -$n_length + 1);
-        $temp = bcmul($temp, $cache[self::DATA][$key], 0);
+        $temp = bcmul($temp, (string) $cache[self::DATA][$key], 0);
         $temp = substr($temp, 0, -$n_length - 1);
 
         $r1 = substr($x, -$n_length - 1);

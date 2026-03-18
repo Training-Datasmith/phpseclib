@@ -54,16 +54,12 @@ use phpseclib4\File\X509;
 *
 * @author  Jim Wigginton <terrafrost@php.net>
 */
-class EncryptedData implements \ArrayAccess, \Countable, \Iterator
+class EncryptedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
 {
     use \phpseclib4\File\Common\Traits\KeyDerivation;
 
     private Constructed|array $cms;
     public string $cek; // content encryption key
-
-    /**
-     * @param string $data
-     */
     public function __construct(string $data, string $encryptionAlgorithm = 'aes128-CBC-PAD', #[\SensitiveParameter] ?string $key = null)
     {
         $cipher = self::getPBES2EncryptionObject($encryptionAlgorithm);
@@ -97,7 +93,7 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator
 
     public static function load(string|array|Constructed $encoded): self
     {
-        $r = new \ReflectionClass(__CLASS__);
+        $r = new \ReflectionClass(self::class);
         $cms = $r->newInstanceWithoutConstructor();
         $cms->cms = is_string($encoded) ? self::loadString($encoded) : $encoded;
 
@@ -110,7 +106,7 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator
             $recipient = &$cms->cms['content']['recipientInfos'][$i];
             $key = $recipient->index;
             if ($recipient instanceof Choice) {
-                $encoded = chr(ASN1::TYPE_SEQUENCE | 0x20) . substr($recipient->value->getEncoded(), 1);
+                $encoded = chr(ASN1::TYPE_SEQUENCE | 0x20) . substr((string) $recipient->value->getEncoded(), 1);
                 $recipient[$key] = match ($key) {
                     'ktri' => KeyTransRecipient::load($encoded),
                     'kari' => KeyAgreeRecipient::load($encoded),
@@ -160,8 +156,8 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator
         $decoded = ASN1::decodeBER($cms['content']->value);
         if ($cms['contentType'] == 'id-envelopedData') {
             $rules = [];
-            $rules['originatorInfo']['certs'] = [CMS::class, 'mapInCerts'];
-            $rules['originatorInfo']['crls'] = [CMS::class, 'mapInCRLs'];
+            $rules['originatorInfo']['certs'] = CMS::mapInCerts(...);
+            $rules['originatorInfo']['crls'] = CMS::mapInCRLs(...);
             ASN1::disableCacheInvalidation();
             $cms['content'] = ASN1::map($decoded, Maps\EnvelopedData::MAP, $rules);
             ASN1::enableCacheInvalidation();
@@ -436,14 +432,14 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator
                     try {
                         $recipient['kekri']->withKey($key);
                         return $this;
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                     }
                     break;
                 case isset($recipient['ktri']) && $key instanceof RSA\PrivateKey:
                     try {
                         $recipient['ktri']->withKey($key);
                         return $this;
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                     }
                     break;
                 case isset($recipient['kari']) && $key instanceof EC\PrivateKey:
@@ -451,7 +447,7 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator
                         try {
                             $subkey->withKey($key);
                             return $this;
-                        } catch (\Exception $e) {
+                        } catch (\Exception) {
                         }
                     }
             }
@@ -462,13 +458,12 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator
     public function deriveFromPassword(#[\SensitiveParameter] string $password): self
     {
         $this->compile();
-        $result = [];
         foreach ($this->cms['content']['recipientInfos'] as $recipient) {
             if (isset($recipient['pwri'])) {
                 try {
                     $recipient['pwri']->withPassword($password);
                     return $this;
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                 }
             }
         }
@@ -568,11 +563,11 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator
                 $algorithm = ['algorithm' => 'rsaEncryption', 'parameters' => new ASN1\Types\ExplicitNull()];
             } else {
                 $hash = (string) $publicKey->getHash();
-                if (substr($hash, 0, 3) == 'sha') {
+                if (str_starts_with($hash, 'sha')) {
                     $hash = "id-$hash";
                 }
                 $mgfHash = (string) $publicKey->getMGFHash();
-                if (substr($mgfHash, 0, 3) == 'sha') {
+                if (str_starts_with($mgfHash, 'sha')) {
                     $mgfHash = "id-$mgfHash";
                 }
                 $algorithm = [

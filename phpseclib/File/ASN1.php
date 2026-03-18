@@ -174,7 +174,6 @@ abstract class ASN1
     /**
      * ASN.1 object identifiers
      *
-     * @var array
      * @link http://en.wikipedia.org/wiki/Object_identifier
      */
     private static array $oids = [];
@@ -192,7 +191,6 @@ abstract class ASN1
     /**
      * Default date format
      *
-     * @var string
      * @link http://php.net/class.datetime
      */
     private static string $format = 'D, d M Y H:i:s O';
@@ -516,7 +514,7 @@ abstract class ASN1
             case self::TYPE_GENERALIZED_TIME:
                 try {
                     $current['content'] = self::decodeTime($content, $tag);
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     $current['content'] = new Element($headercontent . $content);
                 }
                 break;
@@ -598,7 +596,7 @@ abstract class ASN1
         }
 
         if (isset($mapping['implicit']) && !is_object($decoded['content'])) {
-            $temp = chr($mapping['type']) . self::encodeLength(strlen($decoded['content'])) . $decoded['content'];
+            $temp = chr($mapping['type']) . self::encodeLength(strlen((string) $decoded['content'])) . $decoded['content'];
             $temp = self::decodeBER($temp);
             return isset($mapping['mapping']) ? self::applyMap($temp['content'], $mapping['mapping']) : $temp['content'];
         }
@@ -823,7 +821,7 @@ abstract class ASN1
                     break;
                 }
 
-                $value = '';
+                $value = [];
                 foreach ($mapping['children'] as $key => $child) {
                     switch (true) {
                         case is_array($source) && !array_key_exists($key, $source):
@@ -1045,25 +1043,17 @@ abstract class ASN1
                 if (isset($idx)) {
                     array_pop(self::$location);
                 }
-
-                switch (true) {
-                    case $source instanceof BaseType && $source->hasTypeID():
-                        return self::encode_der($source, ['type' => $source->getTypeID()] + $mapping, null);
-                    case !isset($source):
-                        return self::encode_der(null, ['type' => self::TYPE_NULL] + $mapping, null);
-                    case is_int($source):
-                    case $source instanceof BigInteger:
-                        return self::encode_der($source, ['type' => self::TYPE_INTEGER] + $mapping, null);
-                    case is_float($source):
-                        return self::encode_der($source, ['type' => self::TYPE_REAL] + $mapping, null);
-                    case is_bool($source):
-                        return self::encode_der($source, ['type' => self::TYPE_BOOLEAN] + $mapping, null);
-                    case is_string($source):
-                        return self::encode_der($source, ['type' => self::TYPE_UTF8_STRING] + $mapping, null);
-                }
-                throw new RuntimeException('Please choose a primitive type or create an ASN1Element for ' . implode('/', $loc));
+                return match (true) {
+                    $source instanceof BaseType && $source->hasTypeID() => self::encode_der($source, ['type' => $source->getTypeID()] + $mapping),
+                    !isset($source) => self::encode_der(null, ['type' => self::TYPE_NULL] + $mapping),
+                    is_int($source), $source instanceof BigInteger => self::encode_der($source, ['type' => self::TYPE_INTEGER] + $mapping),
+                    is_float($source) => self::encode_der($source, ['type' => self::TYPE_REAL] + $mapping),
+                    is_bool($source) => self::encode_der($source, ['type' => self::TYPE_BOOLEAN] + $mapping),
+                    is_string($source) => self::encode_der($source, ['type' => self::TYPE_UTF8_STRING] + $mapping),
+                    default => throw new RuntimeException('Please choose a primitive type or create an ASN1Element for ' . implode('/', $loc)),
+                };
             case self::TYPE_NULL:
-                $value = '';
+                $value = [];
                 break;
             case self::TYPE_NUMERIC_STRING:
             case self::TYPE_TELETEX_STRING:
@@ -1198,7 +1188,7 @@ abstract class ASN1
             throw new RuntimeException("$source is an invalid OID");
         }
 
-        $parts = explode('.', $oid);
+        $parts = explode('.', (string) $oid);
         $part1 = array_shift($parts);
         $part2 = array_shift($parts);
 
@@ -1356,13 +1346,13 @@ abstract class ASN1
             $temp = $str;
         } else {
             $temp = preg_replace('#.*?^-+[^-]+-+[\r\n ]*$#ms', '', $str, 1);
-            $temp = preg_replace('#-+END.*[\r\n ]*.*#ms', '', $temp, 1);
+            $temp = preg_replace('#-+END.*[\r\n ]*.*#ms', '', (string) $temp, 1);
         }
         // remove new lines
         $temp = str_replace(["\r", "\n", ' '], '', $temp);
         // remove the -----BEGIN CERTIFICATE----- and -----END CERTIFICATE----- stuff
         $temp = preg_replace('#^-+[^-]+-+|-+[^-]+-+$#', '', $temp);
-        $temp = preg_match('#^[a-zA-Z\d/+]*={0,2}$#', $temp) ? Strings::base64_decode($temp) : false;
+        $temp = preg_match('#^[a-zA-Z\d/+]*={0,2}$#', (string) $temp) ? Strings::base64_decode($temp) : false;
         return $temp != false ? $temp : $str;
     }
 

@@ -41,13 +41,13 @@ abstract class SSH2
             return false;
         }
         [$type, $blob] = $result;
-        if ($type != 'ssh-dss' || strlen($blob) != 40) {
+        if ($type != 'ssh-dss' || strlen((string) $blob) != 40) {
             return false;
         }
 
         return [
-            'r' => new BigInteger(substr($blob, 0, 20), 256),
-            's' => new BigInteger(substr($blob, 20), 256),
+            'r' => new BigInteger(substr((string) $blob, 0, 20), 256),
+            's' => new BigInteger(substr((string) $blob, 20), 256),
         ];
     }
 

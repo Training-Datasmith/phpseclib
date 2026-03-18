@@ -32,20 +32,18 @@ use phpseclib4\File\CMS;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class CompressedData implements \ArrayAccess, \Countable, \Iterator
+class CompressedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
 {
     private Constructed|array $cms;
-    private ?string $decompressed;
 
     /**
-     * @param string $data
+     * @param string $decompressed
      */
-    public function __construct(string $data)
+    public function __construct(private ?string $decompressed)
     {
         if (!function_exists('zlib_encode')) {
             throw new InsufficientSetupException('zlib_encode() is not available');
         }
-        $this->decompressed = $data;
         $this->cms = [
             'contentType' => 'id-ct-compressedData',
             'content' => [
@@ -53,7 +51,7 @@ class CompressedData implements \ArrayAccess, \Countable, \Iterator
                 'compressionAlgorithm' => ['algorithm' => 'id-alg-zlibCompress'],
                 'encapContentInfo' => [
                     'eContentType' => 'id-data',
-                    'eContent' => zlib_encode($data, ZLIB_ENCODING_DEFLATE),
+                    'eContent' => zlib_encode((string) $this->decompressed, ZLIB_ENCODING_DEFLATE),
                 ],
             ]
         ];
@@ -64,7 +62,7 @@ class CompressedData implements \ArrayAccess, \Countable, \Iterator
     // need to call CMS\SignedData::load()
     public static function load(string|array|Constructed $encoded): self
     {
-        $r = new \ReflectionClass(__CLASS__);
+        $r = new \ReflectionClass(self::class);
         $cms = $r->newInstanceWithoutConstructor();
         $cms->cms = is_string($encoded) ? self::loadString($encoded) : $encoded;
         return $cms;

@@ -61,7 +61,7 @@ abstract class XML
         $use_errors = libxml_use_internal_errors(true);
 
         $dom = new \DOMDocument();
-        if (substr($key, 0, 5) != '<?xml') {
+        if (!str_starts_with($key, '<?xml')) {
             $key = '<xml>' . $key . '</xml>';
         }
         if (!$dom->loadXML($key)) {

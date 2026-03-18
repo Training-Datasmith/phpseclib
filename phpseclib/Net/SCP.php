@@ -100,15 +100,13 @@ class SCP extends SSH2
 
         $temp = $this->get_channel_packet(self::CHANNEL_EXEC, true);
         if ($temp !== chr(0)) {
-            $this->close_channel(self::CHANNEL_EXEC, true);
+            $this->close_channel(self::CHANNEL_EXEC);
             return false;
         }
 
         $packet_size = $this->packet_size_client_to_server[self::CHANNEL_EXEC] - 4;
 
         $remote_file = basename($remote_file);
-
-        $dataCallback = false;
         switch (true) {
             case is_resource($data):
                 $mode = $mode & ~self::SOURCE_LOCAL_FILE;
@@ -127,7 +125,7 @@ class SCP extends SSH2
                 }
                 $fp = @fopen($data, 'rb');
                 if (!$fp) {
-                    $this->close_channel(self::CHANNEL_EXEC, true);
+                    $this->close_channel(self::CHANNEL_EXEC);
                     return false;
                 }
         }
@@ -147,7 +145,7 @@ class SCP extends SSH2
 
         $temp = $this->get_channel_packet(self::CHANNEL_EXEC, true);
         if ($temp !== chr(0)) {
-            $this->close_channel(self::CHANNEL_EXEC, true);
+            $this->close_channel(self::CHANNEL_EXEC);
             return false;
         }
 
@@ -161,7 +159,7 @@ class SCP extends SSH2
                 call_user_func($callback, $sent);
             }
         }
-        $this->close_channel(self::CHANNEL_EXEC, true);
+        $this->close_channel(self::CHANNEL_EXEC);
 
         if ($mode != self::SOURCE_STRING) {
             fclose($fp);
@@ -195,15 +193,15 @@ class SCP extends SSH2
         // per https://goteleport.com/blog/scp-familiar-simple-insecure-slow/ non-zero responses mean there are errors
         if ($info[0] === chr(1) || $info[0] == chr(2)) {
             $type = $info[0] === chr(1) ? 'warning' : 'error';
-            $this->scp_errors[] = "$type: " . substr($info, 1);
-            $this->close_channel(self::CHANNEL_EXEC, true);
+            $this->scp_errors[] = "$type: " . substr((string) $info, 1);
+            $this->close_channel(self::CHANNEL_EXEC);
             return false;
         }
 
         $this->send_channel_packet(self::CHANNEL_EXEC, chr(0));
 
-        if (!preg_match('#(?<perms>[^ ]+) (?<size>\d+) (?<name>.+)#', rtrim($info), $info)) {
-            $this->close_channel(self::CHANNEL_EXEC, true);
+        if (!preg_match('#(?<perms>[^ ]+) (?<size>\d+) (?<name>.+)#', rtrim((string) $info), $info)) {
+            $this->close_channel(self::CHANNEL_EXEC);
             return false;
         }
 
@@ -213,7 +211,7 @@ class SCP extends SSH2
         } elseif (!is_null($local_file)) {
             $fp = @fopen($local_file, 'wb');
             if (!$fp) {
-                $this->close_channel(self::CHANNEL_EXEC, true);
+                $this->close_channel(self::CHANNEL_EXEC);
                 return false;
             }
             $fclose_check = true;
@@ -226,23 +224,23 @@ class SCP extends SSH2
             $data = $this->get_channel_packet(self::CHANNEL_EXEC, true);
             // Terminate the loop in case the server repeatedly sends an empty response
             if ($data === false) {
-                $this->close_channel(self::CHANNEL_EXEC, true);
+                $this->close_channel(self::CHANNEL_EXEC);
                 // no data received from server
                 return false;
             }
             // SCP usually seems to split stuff out into 16k chunks
-            $length = strlen($data);
+            $length = strlen((string) $data);
             $size += $length;
             $end = $size > $info['size'];
             if ($end) {
                 $diff = $size - $info['size'];
                 $offset = $length - $diff;
                 if ($data[$offset] === chr(0)) {
-                    $data = substr($data, 0, -$diff);
+                    $data = substr((string) $data, 0, -$diff);
                 } else {
                     $type = $data[$offset] === chr(1) ? 'warning' : 'error';
-                    $this->scp_errors[] = "$type: " . substr($data, 1);
-                    $this->close_channel(self::CHANNEL_EXEC, true);
+                    $this->scp_errors[] = "$type: " . substr((string) $data, 1);
+                    $this->close_channel(self::CHANNEL_EXEC);
                     return false;
                 }
             }
@@ -250,7 +248,7 @@ class SCP extends SSH2
             if (is_null($local_file)) {
                 $content .= $data;
             } else {
-                fputs($fp, $data);
+                fputs($fp, (string) $data);
             }
 
             if (is_callable($progressCallback)) {
@@ -262,14 +260,14 @@ class SCP extends SSH2
             }
         }
 
-        $this->close_channel(self::CHANNEL_EXEC, true);
+        $this->close_channel(self::CHANNEL_EXEC);
 
         if ($fclose_check) {
             fclose($fp);
         }
 
         // if $content isn't set that means a file was written to
-        return isset($content) ? $content : true;
+        return $content ?? true;
     }
 
     /**

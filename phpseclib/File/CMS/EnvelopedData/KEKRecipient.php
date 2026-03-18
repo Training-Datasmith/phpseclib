@@ -23,15 +23,12 @@ use phpseclib4\File\ASN1\Maps;
 
 class KEKRecipient extends Recipient implements DerivableKey
 {
-    private ?string $kek = null;
-
     protected static function loadString(string $encoded): Constructed
     {
         //ASN1::disableCacheInvalidation();
         $decoded = ASN1::decodeBER($encoded);
-        $recipient = ASN1::map($decoded, Maps\KEKRecipientInfo::MAP);
         //ASN1::enableCacheInvalidation();
-        return $recipient;
+        return ASN1::map($decoded, Maps\KEKRecipientInfo::MAP);
     }
 
     public function withKey(#[\SensitiveParameter] string $key): self
@@ -62,8 +59,6 @@ class KEKRecipient extends Recipient implements DerivableKey
 
     public function toString(): string
     {
-        $recipient = ASN1::encodeDER($this->recipient, Maps\KEKRecipientInfo::MAP);
-
-        return $recipient;
+        return ASN1::encodeDER($this->recipient, Maps\KEKRecipientInfo::MAP);
     }
 }

@@ -88,9 +88,8 @@ abstract class OpenSSH extends Progenitor
         }
 
         $comment = $options['comment'] ?? self::$comment;
-        $DSAPublicKey = 'ssh-dss ' . base64_encode($DSAPublicKey) . ' ' . $comment;
 
-        return $DSAPublicKey;
+        return 'ssh-dss ' . base64_encode($DSAPublicKey) . ' ' . $comment;
     }
 
     /**

@@ -196,9 +196,8 @@ class Prime extends Base
         if ($u1->equals($u2)) {
             if (!$s1->equals($s2)) {
                 return [];
-            } else {
-                return $this->doublePoint($p);
             }
+            return $this->doublePoint($p);
         }
         $h = $u2->subtract($u1);
         $r = $s2->subtract($s1);
@@ -233,9 +232,8 @@ class Prime extends Base
         if ($u1->equals($u2)) {
             if (!$s1->equals($s2)) {
                 return [];
-            } else {
-                return $this->doublePoint($p);
             }
+            return $this->doublePoint($p);
         }
         $h = $u2->subtract($u1);
         $r = $s2->subtract($s1);
@@ -272,9 +270,8 @@ class Prime extends Base
         if ($u1->equals($u2)) {
             if (!$s1->equals($s2)) {
                 return [];
-            } else {
-                return $this->doublePoint($p);
             }
+            return $this->doublePoint($p);
         }
         $h = $u2->subtract($u1);
         $r = $s2->subtract($s1);
@@ -333,9 +330,9 @@ class Prime extends Base
         if ($p[0]->equals($q[0])) {
             if (!$p[1]->equals($q[1])) {
                 return [];
-            } else { // eg. doublePoint
-                [$numerator, $denominator] = $this->doublePointHelper($p);
             }
+            // eg. doublePoint
+            [$numerator, $denominator] = $this->doublePointHelper($p);
         } else {
             $numerator = $q[1]->subtract($p[1]);
             $denominator = $q[0]->subtract($p[0]);
@@ -439,21 +436,16 @@ class Prime extends Base
     /**
      * Returns the X coordinate and the derived Y coordinate
      */
-    public function derivePoint($m): array
+    public function derivePoint(string $m): array
     {
         $y = ord(Strings::shift($m));
         $x = new BigInteger($m, 256);
         $xp = $this->convertInteger($x);
-        switch ($y) {
-            case 2:
-                $ypn = false;
-                break;
-            case 3:
-                $ypn = true;
-                break;
-            default:
-                throw new RuntimeException('Coordinate not in recognized format');
-        }
+        $ypn = match ($y) {
+            2 => false,
+            3 => true,
+            default => throw new RuntimeException('Coordinate not in recognized format'),
+        };
         $temp = $xp->multiply($this->a);
         $temp = $xp->multiply($xp)->multiply($xp)->add($temp);
         $temp = $temp->add($this->b);
@@ -468,8 +460,6 @@ class Prime extends Base
 
     /**
      * Tests whether or not the x / y values satisfy the equation
-     *
-     * @return boolean
      */
     public function verifyPoint(array $p): bool
     {

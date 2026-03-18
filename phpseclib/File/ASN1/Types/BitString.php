@@ -30,7 +30,7 @@ class BitString extends BaseString implements \ArrayAccess, \Countable, \Iterato
     public array $mappedValue;
     public const TYPE = 4;
 
-    private function preCheck()
+    private function preCheck(): void
     {
         if (!isset($this->mappedValue)) {
             throw new RuntimeException('mappedValue needs to be set for this functionality to be used');
@@ -111,8 +111,6 @@ class BitString extends BaseString implements \ArrayAccess, \Countable, \Iterato
 
     public function __debugInfo(): array
     {
-        return isset($this->mappedValue) ?
-            $this->mappedValue :
-            ['value' => bin2hex($this->value)];
+        return $this->mappedValue ?? ['value' => bin2hex($this->value)];
     }
 }

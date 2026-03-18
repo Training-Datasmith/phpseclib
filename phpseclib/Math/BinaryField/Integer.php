@@ -33,7 +33,7 @@ use phpseclib4\Math\Common\FiniteField\Integer as Base;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class Integer extends Base
+class Integer extends Base implements \Stringable
 {
     /**
      * Holds the BinaryField's value
@@ -41,13 +41,6 @@ class Integer extends Base
      * @var string
      */
     protected $value;
-
-    /**
-     * Keeps track of current instance
-     *
-     * @var int
-     */
-    protected $instanceID;
 
     /**
      * Holds the PrimeField's modulo
@@ -65,14 +58,17 @@ class Integer extends Base
 
     /**
      * Default constructor
+     * @param int $instanceID
      */
-    public function __construct($instanceID, $num = '')
+    public function __construct(/**
+     * Keeps track of current instance
+     */
+    protected $instanceID, $num = '')
     {
-        $this->instanceID = $instanceID;
-        if (!strlen($num)) {
+        if (!strlen((string) $num)) {
             $this->value = '';
         } else {
-            $reduce = static::$reduce[$instanceID];
+            $reduce = static::$reduce[$this->instanceID];
             $this->value = $reduce($num);
         }
     }
@@ -135,10 +131,8 @@ class Integer extends Base
 
     /**
      * Returns the degree of the polynomial
-     *
-     * @return int
      */
-    private static function deg(string $x)
+    private static function deg(string $x): int
     {
         $x = ltrim($x, "\0");
         $xbit = decbin(ord($x[0]));
@@ -317,7 +311,7 @@ class Integer extends Base
     /**
      * Adds three numbers
      */
-    private static function subAdd3(string $x, string $y, $z): string
+    private static function subAdd3(string $x, string $y, string $z): string
     {
         $length = max(strlen($x), strlen($y), strlen($z));
         $x = str_pad($x, $length, "\0", STR_PAD_LEFT);
@@ -328,8 +322,6 @@ class Integer extends Base
 
     /**
      * Adds two BinaryFieldIntegers.
-     *
-     * @return static
      */
     public function add(self $y): Integer
     {
@@ -345,8 +337,6 @@ class Integer extends Base
 
     /**
      * Subtracts two BinaryFieldIntegers.
-     *
-     * @return static
      */
     public function subtract(self $x): Integer
     {
@@ -355,8 +345,6 @@ class Integer extends Base
 
     /**
      * Multiplies two BinaryFieldIntegers.
-     *
-     * @return static
      */
     public function multiply(self $y): Integer
     {
@@ -367,8 +355,6 @@ class Integer extends Base
 
     /**
      * Returns the modular inverse of a BinaryFieldInteger
-     *
-     * @return static
      */
     public function modInverse(): Integer
     {
@@ -402,8 +388,6 @@ class Integer extends Base
 
     /**
      * Divides two PrimeFieldIntegers.
-     *
-     * @return static
      */
     public function divide(self $x): Integer
     {
@@ -421,7 +405,7 @@ class Integer extends Base
      *
      * @return object
      */
-    public function negate()
+    public function negate(): static
     {
         $x = str_pad($this->value, strlen(static::$modulo[$this->instanceID]), "\0", STR_PAD_LEFT);
 
@@ -466,7 +450,7 @@ class Integer extends Base
      *
      * @return string
      */
-    public function toBigInteger()
+    public function toBigInteger(): \phpseclib4\Math\BigInteger
     {
         return new BigInteger($this->value, 256);
     }
@@ -474,7 +458,7 @@ class Integer extends Base
     /**
      *  __toString() magic method
      */
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->toBigInteger();
     }

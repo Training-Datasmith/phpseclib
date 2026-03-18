@@ -52,35 +52,24 @@ class Identity implements PrivateKey
     /**
      * Key Object
      *
-     * @var PublicKey
      * @see self::getPublicKey()
      */
-    private $key;
+    private ?\phpseclib4\Crypt\Common\PublicKey $key = null;
 
     /**
      * Key Blob
      *
-     * @var string
      * @see self::sign()
      */
-    private $key_blob;
-
-    /**
-     * Socket Resource
-     *
-     * @var resource
-     * @see self::sign()
-     */
-    private $fsock;
+    private ?string $key_blob = null;
 
     /**
      * Signature flags
      *
-     * @var int
      * @see self::sign()
      * @see self::setHash()
      */
-    private $flags = 0;
+    private int $flags = 0;
 
     /**
      * Comment
@@ -91,10 +80,8 @@ class Identity implements PrivateKey
 
     /**
      * Curve Aliases
-     *
-     * @var array
      */
-    private static $curveAliases = [
+    private static array $curveAliases = [
         'secp256r1' => 'nistp256',
         'secp384r1' => 'nistp384',
         'secp521r1' => 'nistp521',
@@ -106,9 +93,15 @@ class Identity implements PrivateKey
      *
      * @param resource $fsock
      */
-    public function __construct($fsock)
+    public function __construct(
+        /**
+         * Socket Resource
+         *
+         * @see self::sign()
+         */
+        private $fsock
+    )
     {
-        $this->fsock = $fsock;
     }
 
     /**
@@ -177,18 +170,11 @@ class Identity implements PrivateKey
             }
         }
         if ($this->key instanceof EC) {
-            switch ($this->key->getCurve()) {
-                case 'secp256r1':
-                    $expectedHash = 'sha256';
-                    break;
-                case 'secp384r1':
-                    $expectedHash = 'sha384';
-                    break;
-                //case 'secp521r1':
-                //case 'Ed25519':
-                default:
-                    $expectedHash = 'sha512';
-            }
+            $expectedHash = match ($this->key->getCurve()) {
+                'secp256r1' => 'sha256',
+                'secp384r1' => 'sha384',
+                default => 'sha512',
+            };
             if ($hash != $expectedHash) {
                 throw new UnsupportedAlgorithmException('The only supported hash for ' . self::$curveAliases[$this->key->getCurve()] . ' is ' . $expectedHash);
             }
@@ -238,10 +224,8 @@ class Identity implements PrivateKey
      * Returns the curve
      *
      * Returns a string if it's a named curve, an array if not
-     *
-     * @return string|array
      */
-    public function getCurve()
+    public function getCurve(): array|string
     {
         if (!$this->key instanceof EC) {
             throw new UnsupportedAlgorithmException('Only EC keys have curves');
@@ -314,7 +298,7 @@ class Identity implements PrivateKey
     /**
      * Sets the comment
      */
-    public function withComment($comment = null)
+    public function withComment($comment = null): static
     {
         $new = clone $this;
         $new->comment = $comment;

@@ -63,7 +63,7 @@ use phpseclib4\Math\BigInteger;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
+class X509 implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
 {
     use \phpseclib4\File\Common\Traits\Extension;
     use \phpseclib4\File\Common\Traits\DN;
@@ -110,9 +110,7 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
             // of time, however, phpseclib, making no assumptions on the underlying filesystem, doesn't
             // really have a mechanism to do this. if you want to save CRLs to some sort of DB then you can
             // replace this function with one that'll cache to the DB and pull from the DB when appropriate
-            self::$inCRLFunction = function(string $url, BigInteger $serial) {
-                return false;
-            };
+            self::$inCRLFunction = (fn(string $url, BigInteger $serial) => false);
         }
 
         ASN1::loadOIDs('X509');
@@ -181,16 +179,11 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
     public static function addCA(string|array|Constructed|X509 $cert, int $mode = ASN1::FORMAT_AUTO_DETECT): void
     {
         $x509 = new self();
-        switch (true) {
-            case is_string($cert):
-                $x509->cert = self::loadString($cert, $mode);
-                break;
-            case $cert instanceof X509:
-                $x509->cert = $cert->cert;
-                break;
-            default:
-                $x509->cert = $cert;
-        }
+        $x509->cert = match (true) {
+            is_string($cert) => self::loadString($cert, $mode),
+            $cert instanceof X509 => $cert->cert,
+            default => $cert,
+        };
         $x509->isCA = true;
         self::$CAs[] = $x509;
     }
@@ -282,16 +275,16 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
         $decoded = ASN1::decodeBER($cert);
 
         $rules = [];
-        $rules['tbsCertificate']['extensions']['*'] = [self::class, 'mapInExtensions'];
-        $rules['tbsCertificate']['subject']['rdnSequence']['*']['*'] = [self::class, 'mapInDNs'];
-        $rules['tbsCertificate']['issuer']['rdnSequence']['*']['*'] = [self::class, 'mapInDNs'];
-        $rules['tbsCertificate']['subjectPublicKeyInfo'] = function(Constructed &$key) {
+        $rules['tbsCertificate']['extensions']['*'] = self::mapInExtensions(...);
+        $rules['tbsCertificate']['subject']['rdnSequence']['*']['*'] = self::mapInDNs(...);
+        $rules['tbsCertificate']['issuer']['rdnSequence']['*']['*'] = self::mapInDNs(...);
+        $rules['tbsCertificate']['subjectPublicKeyInfo'] = function(Constructed &$key): void {
             try {
                 $key = PublicKeyLoader::load($key->getEncoded());
                 if ($key instanceof RSA && $key->getLoadedFormat() == 'PKCS8') {
                     $key = $key->withPadding(RSA::SIGNATURE_PKCS1);
                 }
-            } catch (NoKeyLoadedException $e) {
+            } catch (NoKeyLoadedException) {
             }
         };
 
@@ -411,12 +404,10 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
         if (!$this->cert['tbsCertificate']['subjectPublicKeyInfo'] instanceof PublicKey) {
             throw new UnsupportedFormatException('Unable to decode subjectPublicKeyInfo');
         }
-
-        $publicKey = $this->cert['tbsCertificate']['subjectPublicKeyInfo'];
         //if ($publicKey instanceof RSA && $publicKey->getLoadedFormat() == 'PKCS8') {
         //    return $publicKey->withPadding(RSA::SIGNATURE_PKCS1);
         //}
-        return $publicKey;
+        return $this->cert['tbsCertificate']['subjectPublicKeyInfo'];
     }
 
     public function setSubjectDN(array|string|Element $props): void
@@ -1184,17 +1175,11 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
             if (!$this->hasExtension('id-ce-keyUsage')) {
                 return false;
             }
-            switch (true) {
-                case is_array($subject) || $subject instanceof Choice:
-                    $expected = $expectedKeyUsage;
-                    break;
-                case $subject instanceof self:
-                    $expected = ['keyCertSign'];
-                    break;
-                //case $subject instanceof CRL:
-                default:
-                    $expected = ['cRLSign'];
-            }
+            $expected = match (true) {
+                is_array($subject) || $subject instanceof Choice => $expectedKeyUsage,
+                $subject instanceof self => ['keyCertSign'],
+                default => ['cRLSign'],
+            };
             $ext = $this->getExtension('id-ce-keyUsage')['extnValue'];
             $found = false;
             foreach ($expected as $search) {
@@ -1223,12 +1208,10 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
 
         if (is_array($subject) || $subject instanceof Choice) {
             if (isset($subject['issuerAndSerialNumber'])) {
-                switch (true) {
-                    case self::$strictDNComparison && self::formatDN($subject['issuerAndSerialNumber']['issuer'], self::DN_ASN1) === $this->getIssuerDN(self::DN_ASN1):
-                    case !self::$strictDNComparison && self::formatDN($subject['issuerAndSerialNumber']['issuer'], self::DN_CANON) === $this->getIssuerDN(self::DN_CANON):
-                        return $subject['issuerAndSerialNumber']['serialNumber']->equals($this->cert['tbsCertificate']['serialNumber']);
-                }
-                return false;
+                return match (true) {
+                    self::$strictDNComparison && self::formatDN($subject['issuerAndSerialNumber']['issuer'], self::DN_ASN1) === $this->getIssuerDN(self::DN_ASN1), !self::$strictDNComparison && self::formatDN($subject['issuerAndSerialNumber']['issuer'], self::DN_CANON) === $this->getIssuerDN(self::DN_CANON) => $subject['issuerAndSerialNumber']['serialNumber']->equals($this->cert['tbsCertificate']['serialNumber']),
+                    default => false,
+                };
             }
             if (isset($subject['subjectKeyIdentifier'])) {
                 $subjectKeyID = $this->getExtension('id-ce-subjectKeyIdentifier');
@@ -1269,7 +1252,7 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
                 if ((self::$inCRLFunction)($url, $this->cert['tbsCertificate']['serialNumber'])) {
                     return false;
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // there's not a URI for us to get the CRL from so we just won't check it
             }
         }
@@ -1299,13 +1282,12 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
         if (!isset($signingCert)) {
             if ($caonly) {
                 return $this->testForIntermediate(true, $count) && $this->validateSignature(true);
-            } else {
-                try {
-                    $this->testForSelfSigned();
-                    $signingCert = $this;
-                } catch (MethodOnlyAvailableForSelfSigned $e) {
-                    return $this->testForIntermediate(true, $count) && $this->validateSignature(true);
-                }
+            }
+            try {
+                $this->testForSelfSigned();
+                $signingCert = $this;
+            } catch (MethodOnlyAvailableForSelfSigned) {
+                return $this->testForIntermediate(true, $count) && $this->validateSignature(true);
             }
         }
 
@@ -1323,7 +1305,7 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
         $result = $signatureResult && $dateResult;
         if ($result) {
             $this->issuer = $signingCert;
-            $this->issuer->caSeq = $this->issuer->caSeq ?? 0;
+            $this->issuer->caSeq ??= 0;
             $this->caSeq = $this->issuer->caSeq + 1;
         }
         return $result;
@@ -1341,15 +1323,17 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
             return false;
         }
         foreach ($opts['extnValue'] as $opt) {
-            if ($opt['accessMethod'] == 'id-ad-caIssuers') {
-                // accessLocation is a GeneralName. GeneralName fields support stuff like email addresses, IP addresses, LDAP,
-                // etc, but we're only supporting URI's. URI's and LDAP are the only thing https://tools.ietf.org/html/rfc4325
-                // discusses
-                if (isset($opt['accessLocation']['uniformResourceIdentifier'])) {
-                    $url = (string) $opt['accessLocation']['uniformResourceIdentifier'];
-                    break;
-                }
+            if ($opt['accessMethod'] != 'id-ad-caIssuers') {
+                continue;
             }
+            // accessLocation is a GeneralName. GeneralName fields support stuff like email addresses, IP addresses, LDAP,
+            // etc, but we're only supporting URI's. URI's and LDAP are the only thing https://tools.ietf.org/html/rfc4325
+            // discusses
+            if (!isset($opt['accessLocation']['uniformResourceIdentifier'])) {
+                continue;
+            }
+            $url = (string) $opt['accessLocation']['uniformResourceIdentifier'];
+            break;
         }
 
         if (!isset($url)) {
@@ -1445,7 +1429,7 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable
         $data = '';
         switch ($parts['scheme']) {
             case 'http':
-                $fsock = @fsockopen($parts['host'], isset($parts['port']) ? $parts['port'] : 80);
+                $fsock = @fsockopen($parts['host'], $parts['port'] ?? 80);
                 if (!$fsock) {
                     return null;
                 }

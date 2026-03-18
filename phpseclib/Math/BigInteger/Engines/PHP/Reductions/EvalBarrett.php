@@ -238,12 +238,10 @@ abstract class EvalBarrett extends Base
 
         $regular .= '$' . $output . '[++$k] = $carry; $carry = 0;';
 
-        $regular .= '}}';
-
         //if (count($arr) < 2 * self::KARATSUBA_CUTOFF) {
         //}
 
-        return $regular;
+        return $regular . '}}';
     }
 
     /**
@@ -281,9 +279,8 @@ abstract class EvalBarrett extends Base
                 }
                 ++$' . $result . '[$i];
             }';
-            $code .= self::generateInlineTrim($result);
 
-            return $code;
+            return $code . self::generateInlineTrim($result);
     }
 
     /**
@@ -334,9 +331,7 @@ abstract class EvalBarrett extends Base
                 --$' . $result . '[$i];
             }';
 
-        $code .= self::generateInlineTrim($result);
-
-        return $code;
+        return $code . self::generateInlineTrim($result);
     }
 
     /**
@@ -392,9 +387,8 @@ abstract class EvalBarrett extends Base
                 }
                 --$' . $result . '[$i];
             }';
-        $code .= self::generateInlineTrim($result);
 
-        return $code;
+        return $code . self::generateInlineTrim($result);
     }
 
     /**
@@ -418,7 +412,8 @@ abstract class EvalBarrett extends Base
                 case $' . $unknown . '[' . $i . '] < ' . $known[$i] . ':
                     goto end_' . $uniqid . ';';
         }
-        $code .= '
+
+        return $code . ('
                 default:
                     // do subcode
             }
@@ -426,9 +421,7 @@ abstract class EvalBarrett extends Base
             subcode_' . $uniqid . ':' . $subcode . '
             goto loop_' . $uniqid . ';
 
-            end_' . $uniqid . ':';
-
-        return $code;
+            end_' . $uniqid . ':');
     }
 
     /**

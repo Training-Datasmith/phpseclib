@@ -40,7 +40,7 @@ use phpseclib4\Math\BigInteger\Engines\Engine;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class BigInteger implements \JsonSerializable
+class BigInteger implements \JsonSerializable, \Stringable
 {
     /**
      * Main Engine
@@ -54,14 +54,12 @@ class BigInteger implements \JsonSerializable
      *
      * @var list<string>
      */
-    private static $engines;
+    private static ?array $engines = null;
 
     /**
      * The actual BigInteger object
-     *
-     * @var object
      */
-    private $value;
+    private object $value;
 
     /**
      * Mode independent value used for serialization.
@@ -108,7 +106,7 @@ class BigInteger implements \JsonSerializable
                 $fqmain::setModExpEngine($modexp);
                 $found = true;
                 break;
-            } catch (\Exception $e) {
+            } catch (\Exception) {
             }
         }
 
@@ -155,7 +153,7 @@ class BigInteger implements \JsonSerializable
                 try {
                     self::setEngine($engine[0], $engine[1]);
                     return;
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                 }
             }
 
@@ -194,7 +192,7 @@ class BigInteger implements \JsonSerializable
     /**
      *  __toString() magic method
      */
-    public function __toString()
+    public function __toString(): string
     {
         return (string)$this->value;
     }
@@ -636,7 +634,7 @@ class BigInteger implements \JsonSerializable
      *
      * @return false|BigInteger
      */
-    public static function randomRangePrime(BigInteger $min, BigInteger $max)
+    public static function randomRangePrime(BigInteger $min, BigInteger $max): static
     {
         $class = self::$mainEngine;
         return new static($class::randomRangePrime($min->value, $max->value));
@@ -697,7 +695,7 @@ class BigInteger implements \JsonSerializable
     public static function min(BigInteger ...$nums): BigInteger
     {
         $class = self::$mainEngine;
-        $nums = array_map(fn ($num) => $num->value, $nums);
+        $nums = array_map(fn (\phpseclib4\Math\BigInteger $num) => $num->value, $nums);
         return new static($class::min(...$nums));
     }
 
@@ -707,7 +705,7 @@ class BigInteger implements \JsonSerializable
     public static function max(BigInteger ...$nums): BigInteger
     {
         $class = self::$mainEngine;
-        $nums = array_map(fn ($num) => $num->value, $nums);
+        $nums = array_map(fn (\phpseclib4\Math\BigInteger $num) => $num->value, $nums);
         return new static($class::max(...$nums));
     }
 
@@ -783,7 +781,7 @@ class BigInteger implements \JsonSerializable
     public function createRecurringModuloFunction()
     {
         $func = $this->value->createRecurringModuloFunction();
-        return fn (BigInteger $x) => new static($func($x->value));
+        return fn (BigInteger $x): static => new static($func($x->value));
     }
 
     /**
@@ -795,6 +793,6 @@ class BigInteger implements \JsonSerializable
      */
     public function bitwise_split(int $split): array
     {
-        return array_map(fn ($val) => new static($val), $this->value->bitwise_split($split));
+        return array_map(fn ($val): static => new static($val), $this->value->bitwise_split($split));
     }
 }

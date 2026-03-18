@@ -68,7 +68,7 @@ final class PrivateKey extends EC implements Common\PrivateKey
 
             $point = [$this->curve->convertInteger(new BigInteger(strrev($coordinates), 256))];
             $point = $this->curve->multiplyPoint($point, $this->dA);
-            return strrev($point[0]->toBytes(true));
+            return strrev((string) $point[0]->toBytes(true));
         }
         if (!$this->curve instanceof TwistedEdwardsCurve) {
             $coordinates = "\0$coordinates";
@@ -295,7 +295,7 @@ final class PrivateKey extends EC implements Common\PrivateKey
             ->withHash($this->hash->getHash())
             ->withSignatureFormat($this->shortFormat);
         if ($this->curve instanceof TwistedEdwardsCurve) {
-            $key = $key->withContext($this->context);
+            return $key->withContext($this->context);
         }
         return $key;
     }
@@ -309,16 +309,12 @@ final class PrivateKey extends EC implements Common\PrivateKey
 
         $temp = new \ReflectionMethod($format, 'save');
         $paramCount = $temp->getNumberOfRequiredParameters();
-
         // @codingStandardsIgnoreStart
-        switch ($paramCount) {
-            case 2: return $format::save($r, $s);
-            case 3: return $format::save($r, $s, $this->getCurve());
-            case 4: return $format::save($r, $s, $this->getCurve(), $this->getLength());
-        }
-        // @codingStandardsIgnoreEnd
-
-        // presumably the only way you could get to this is if you were using a custom plugin
-        throw new UnsupportedOperationException("$format::save() has $paramCount parameters - the only valid parameter counts are 2 or 3");
+        return match ($paramCount) {
+            2 => $format::save($r, $s),
+            3 => $format::save($r, $s, $this->getCurve()),
+            4 => $format::save($r, $s, $this->getCurve(), $this->getLength()),
+            default => throw new UnsupportedOperationException("$format::save() has $paramCount parameters - the only valid parameter counts are 2 or 3"),
+        };
     }
 }

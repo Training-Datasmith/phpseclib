@@ -109,8 +109,8 @@ class KoblitzPrime extends Prime
             $this->basis = static::extendedGCD($lambda->toBigInteger(), $this->order);
             ///*
             foreach ($this->basis as $basis) {
-                echo strtoupper($basis['a']->toHex(true)) . "\n";
-                echo strtoupper($basis['b']->toHex(true)) . "\n\n";
+                echo strtoupper((string) $basis['a']->toHex(true)) . "\n";
+                echo strtoupper((string) $basis['b']->toHex(true)) . "\n\n";
             }
             exit;
             //*/
@@ -152,13 +152,11 @@ class KoblitzPrime extends Prime
             ];
 
             if (isset($p['naf'])) {
-                $beta['naf'] = array_map(function ($p) {
-                    return [
-                        $p[0]->multiply($this->beta),
-                        $p[1],
-                        clone $this->one,
-                    ];
-                }, $p['naf']);
+                $beta['naf'] = array_map(fn(array $p) => [
+                    $p[0]->multiply($this->beta),
+                    $p[1],
+                    clone $this->one,
+                ], $p['naf']);
                 $beta['nafwidth'] = $p['nafwidth'];
             }
 
@@ -247,8 +245,6 @@ class KoblitzPrime extends Prime
 
     /**
      * Tests whether or not the x / y values satisfy the equation
-     *
-     * @return boolean
      */
     public function verifyPoint(array $p): bool
     {

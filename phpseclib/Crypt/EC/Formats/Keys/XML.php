@@ -44,17 +44,13 @@ abstract class XML
 
     /**
      * Default namespace
-     *
-     * @var string
      */
-    private static $namespace;
+    private static ?string $namespace = null;
 
     /**
      * Flag for using RFC4050 syntax
-     *
-     * @var bool
      */
-    private static $rfc4050 = false;
+    private static bool $rfc4050 = false;
 
     /**
      * Break a public or private key down into its constituent components
@@ -75,7 +71,7 @@ abstract class XML
 
         $use_errors = libxml_use_internal_errors(true);
 
-        if (substr($key, 0, 5) != '<?xml') {
+        if (!str_starts_with($key, '<?xml')) {
             $key = '<xml>' . $key . '</xml>';
         }
 
@@ -138,7 +134,7 @@ abstract class XML
     /**
      * Finds the first element in the relevant namespace, strips the namespacing and returns the XML for that element.
      */
-    private static function isolateNamespace(string $xml, string $ns)
+    private static function isolateNamespace(string $xml, string $ns): false|string
     {
         $dom = new \DOMDocument();
         if (!$dom->loadXML($xml)) {
@@ -201,7 +197,7 @@ abstract class XML
         $namedCurve = self::query($xpath, 'namedcurve');
         if ($namedCurve->length == 1) {
             $oid = $namedCurve->item(0)->getAttribute('URN');
-            $oid = preg_replace('#[^\d.]#', '', $oid);
+            $oid = preg_replace('#[^\d.]#', '', (string) $oid);
             $name = array_search($oid, Curves::OIDs);
             if ($name === false) {
                 throw new UnsupportedCurveException('Curve with OID of ' . $oid . ' is not supported');
@@ -239,7 +235,7 @@ abstract class XML
                     continue 2;
                 }
                 $param = preg_replace('#.*/#', '', $query);
-                $$param = self::decodeValue($result->item(0)->textContent);
+                ${$param} = self::decodeValue($result->item(0)->textContent);
             }
             break;
         }
@@ -289,7 +285,7 @@ abstract class XML
                     continue 2;
                 }
                 $param = preg_replace('#.*/#', '', $query);
-                $$param = $result->item(0)->textContent;
+                ${$param} = $result->item(0)->textContent;
             }
             break;
         }
@@ -427,47 +423,21 @@ abstract class XML
                 default:
                     throw new UnsupportedCurveException('Field Type of ' . $temp['fieldID']['fieldType'] . ' is not supported');
             }
-            $xml .= '</' . $pre . 'FieldParams>' . "\r\n" .
-                   '<' . $pre . 'CurveParamsType>' . "\r\n" .
-                   '<' . $pre . 'A>' . $a . '</' . $pre . 'A>' . "\r\n" .
-                   '<' . $pre . 'B>' . $b . '</' . $pre . 'B>' . "\r\n" .
-                   '</' . $pre . 'CurveParamsType>' . "\r\n" .
-                   '<' . $pre . 'BasePointParams>' . "\r\n" .
-                   '<' . $pre . 'BasePoint>' . "\r\n" .
-                   '<' . $pre . 'ECPointType>' . "\r\n" .
-                   '<' . $pre . 'X>' . $x . '</' . $pre . 'X>' . "\r\n" .
-                   '<' . $pre . 'Y>' . $y . '</' . $pre . 'Y>' . "\r\n" .
-                   '</' . $pre . 'ECPointType>' . "\r\n" .
-                   '</' . $pre . 'BasePoint>' . "\r\n" .
-                   '<' . $pre . 'Order>' . $curve->getOrder() . '</' . $pre . 'Order>' . "\r\n" .
-                   '</' . $pre . 'BasePointParams>' . "\r\n" .
-                   '</' . $pre . 'ExplicitParams>' . "\r\n";
 
-            return $xml;
+            return $xml . ('</' . $pre . 'FieldParams>' . "\r\n" . '<' . $pre . 'CurveParamsType>' . "\r\n" . '<' . $pre . 'A>' . $a . '</' . $pre . 'A>' . "\r\n" . '<' . $pre . 'B>' . $b . '</' . $pre . 'B>' . "\r\n" . '</' . $pre . 'CurveParamsType>' . "\r\n" . '<' . $pre . 'BasePointParams>' . "\r\n" . '<' . $pre . 'BasePoint>' . "\r\n" . '<' . $pre . 'ECPointType>' . "\r\n" . '<' . $pre . 'X>' . $x . '</' . $pre . 'X>' . "\r\n" . '<' . $pre . 'Y>' . $y . '</' . $pre . 'Y>' . "\r\n" . '</' . $pre . 'ECPointType>' . "\r\n" . '</' . $pre . 'BasePoint>' . "\r\n" . '<' . $pre . 'Order>' . $curve->getOrder() . '</' . $pre . 'Order>' . "\r\n" . '</' . $pre . 'BasePointParams>' . "\r\n" . '</' . $pre . 'ExplicitParams>' . "\r\n");
         }
 
         if (isset($result['specifiedCurve'])) {
             $xml = '<' . $pre . 'ECParameters>' . "\r\n" .
                    '<' . $pre . 'FieldID>' . "\r\n";
             $temp = $result['specifiedCurve'];
-            switch ($temp['fieldID']['fieldType']) {
-                case 'prime-field':
-                    $xml .= '<' . $pre . 'Prime>' . "\r\n" .
-                           '<' . $pre . 'P>' . Strings::base64_encode($temp['fieldID']['parameters']->toBytes()) . '</' . $pre . 'P>' . "\r\n" .
-                           '</' . $pre . 'Prime>' . "\r\n" ;
-                    break;
-                default:
-                    throw new UnsupportedCurveException('Field Type of ' . $temp['fieldID']['fieldType'] . ' is not supported');
-            }
-            $xml .= '</' . $pre . 'FieldID>' . "\r\n" .
-                   '<' . $pre . 'Curve>' . "\r\n" .
-                   '<' . $pre . 'A>' . Strings::base64_encode($temp['curve']['a']) . '</' . $pre . 'A>' . "\r\n" .
-                   '<' . $pre . 'B>' . Strings::base64_encode($temp['curve']['b']) . '</' . $pre . 'B>' . "\r\n" .
-                   '</' . $pre . 'Curve>' . "\r\n" .
-                   '<' . $pre . 'Base>' . Strings::base64_encode($temp['base']) . '</' . $pre . 'Base>' . "\r\n" .
-                   '<' . $pre . 'Order>' . Strings::base64_encode($temp['order']) . '</' . $pre . 'Order>' . "\r\n" .
-                   '</' . $pre . 'ECParameters>';
-            return $xml;
+            match ($temp['fieldID']['fieldType']) {
+                'prime-field' => $xml .= '<' . $pre . 'Prime>' . "\r\n" .
+                       '<' . $pre . 'P>' . Strings::base64_encode($temp['fieldID']['parameters']->toBytes()) . '</' . $pre . 'P>' . "\r\n" .
+                       '</' . $pre . 'Prime>' . "\r\n",
+                default => throw new UnsupportedCurveException('Field Type of ' . $temp['fieldID']['fieldType'] . ' is not supported'),
+            };
+            return $xml . ('</' . $pre . 'FieldID>' . "\r\n" . '<' . $pre . 'Curve>' . "\r\n" . '<' . $pre . 'A>' . Strings::base64_encode($temp['curve']['a']) . '</' . $pre . 'A>' . "\r\n" . '<' . $pre . 'B>' . Strings::base64_encode($temp['curve']['b']) . '</' . $pre . 'B>' . "\r\n" . '</' . $pre . 'Curve>' . "\r\n" . '<' . $pre . 'Base>' . Strings::base64_encode($temp['base']) . '</' . $pre . 'Base>' . "\r\n" . '<' . $pre . 'Order>' . Strings::base64_encode($temp['order']) . '</' . $pre . 'Order>' . "\r\n" . '</' . $pre . 'ECParameters>');
         }
     }
 }

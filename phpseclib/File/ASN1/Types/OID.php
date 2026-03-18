@@ -22,7 +22,7 @@ use phpseclib4\File\ASN1;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class OID implements BaseType
+class OID implements BaseType, \Stringable
 {
     use Common;
 
@@ -56,7 +56,7 @@ class OID implements BaseType
         return $this->name ?? $this->value;
     }
 
-    private function tryToSetName()
+    private function tryToSetName(): void
     {
         if (!isset($this->name)) {
             if (preg_match('#^\d[\d\.]+\d$#', $this->value)) {

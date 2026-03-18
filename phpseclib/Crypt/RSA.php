@@ -172,7 +172,7 @@ abstract class RSA extends AsymmetricKey
      *
      * @var int|null
      */
-    protected $sLen = null;
+    protected $sLen;
 
     /**
      * Label
@@ -183,17 +183,13 @@ abstract class RSA extends AsymmetricKey
 
     /**
      * Hash function for the Mask Generation Function
-     *
-     * @var Hash
      */
-    protected $mgfHash;
+    protected \phpseclib4\Crypt\Hash $mgfHash;
 
     /**
      * Length of MGF hash function output
-     *
-     * @var int
      */
-    protected $mgfHLen;
+    protected int $mgfHLen;
 
     /**
      * Modulus (ie. n)
@@ -219,10 +215,9 @@ abstract class RSA extends AsymmetricKey
     /**
      * Default public exponent
      *
-     * @var int
      * @link http://en.wikipedia.org/wiki/65537_%28number%29
      */
-    private static $defaultExponent = 65537;
+    private static int $defaultExponent = 65537;
 
     /**
      * Enable Blinding?
@@ -248,10 +243,8 @@ abstract class RSA extends AsymmetricKey
      * engine is set to self::ENGINE_INTERNAL. If Engine is set to self::ENGINE_OPENSSL then smallest Prime is
      * ignored (ie. multi-prime RSA support is more intended as a way to speed up RSA key generation when there's
      * a chance neither gmp nor OpenSSL are installed)
-     *
-     * @var int
      */
-    private static $smallestPrime = 4096;
+    private static int $smallestPrime = 4096;
 
     /**
      * Public Exponent
@@ -477,7 +470,7 @@ abstract class RSA extends AsymmetricKey
     protected static function initialize_static_variables(): void
     {
         if (!isset(self::$configFile)) {
-            self::$configFile = dirname(__FILE__) . '/../openssl.cnf';
+            self::$configFile = __DIR__ . '/../openssl.cnf';
         }
 
         parent::initialize_static_variables();
@@ -571,9 +564,7 @@ abstract class RSA extends AsymmetricKey
 
         $ps = str_repeat(chr(0xFF), $emLen - $tLen - 3);
 
-        $em = "\0\1$ps\0$t";
-
-        return $em;
+        return "\0\1$ps\0$t";
     }
 
     /**
@@ -591,32 +582,16 @@ abstract class RSA extends AsymmetricKey
         $h = $this->hash->hash($m);
 
         // see http://tools.ietf.org/html/rfc3447#page-43
-        switch ($this->hash->getHash()) {
-            case 'sha1':
-                $t = "\x30\x1f\x30\x07\x06\x05\x2b\x0e\x03\x02\x1a\x04\x14";
-                break;
-            case 'sha256':
-                $t = "\x30\x2f\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01\x04\x20";
-                break;
-            case 'sha384':
-                $t = "\x30\x3f\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x02\x04\x30";
-                break;
-            case 'sha512':
-                $t = "\x30\x4f\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x03\x04\x40";
-                break;
-            // from https://www.emc.com/collateral/white-papers/h11300-pkcs-1v2-2-rsa-cryptography-standard-wp.pdf#page=40
-            case 'sha224':
-                $t = "\x30\x2b\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x04\x04\x1c";
-                break;
-            case 'sha512/224':
-                $t = "\x30\x2b\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x05\x04\x1c";
-                break;
-            case 'sha512/256':
-                $t = "\x30\x2f\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x06\x04\x20";
-                break;
-            default:
-                throw new UnsupportedAlgorithmException('md2 and md5 require NULLs');
-        }
+        $t = match ($this->hash->getHash()) {
+            'sha1' => "\x30\x1f\x30\x07\x06\x05\x2b\x0e\x03\x02\x1a\x04\x14",
+            'sha256' => "\x30\x2f\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x01\x04\x20",
+            'sha384' => "\x30\x3f\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x02\x04\x30",
+            'sha512' => "\x30\x4f\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x03\x04\x40",
+            'sha224' => "\x30\x2b\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x04\x04\x1c",
+            'sha512/224' => "\x30\x2b\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x05\x04\x1c",
+            'sha512/256' => "\x30\x2f\x30\x0b\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x06\x04\x20",
+            default => throw new UnsupportedAlgorithmException('md2 and md5 require NULLs'),
+        };
         $t .= $h;
         $tLen = strlen($t);
 
@@ -626,9 +601,7 @@ abstract class RSA extends AsymmetricKey
 
         $ps = str_repeat(chr(0xFF), $emLen - $tLen - 3);
 
-        $em = "\0\1$ps\0$t";
-
-        return $em;
+        return "\0\1$ps\0$t";
     }
 
     /**
@@ -671,23 +644,12 @@ abstract class RSA extends AsymmetricKey
         $new = clone $this;
 
         // \phpseclib4\Crypt\Hash supports algorithms that PKCS#1 doesn't support.  md5-96 and sha1-96, for example.
-        switch (strtolower($hash)) {
-            case 'md2':
-            case 'md5':
-            case 'sha1':
-            case 'sha256':
-            case 'sha384':
-            case 'sha512':
-            case 'sha224':
-            case 'sha512/224':
-            case 'sha512/256':
-                $new->hash = new Hash($hash);
-                break;
-            default:
-                throw new UnsupportedAlgorithmException(
-                    'The only supported hash algorithms are: md2, md5, sha1, sha256, sha384, sha512, sha224, sha512/224, sha512/256'
-                );
-        }
+        $new->hash = match (strtolower($hash)) {
+            'md2', 'md5', 'sha1', 'sha256', 'sha384', 'sha512', 'sha224', 'sha512/224', 'sha512/256' => new Hash($hash),
+            default => throw new UnsupportedAlgorithmException(
+                'The only supported hash algorithms are: md2, md5, sha1, sha256, sha384, sha512, sha224, sha512/224, sha512/256'
+            ),
+        };
         $new->hLen = $new->hash->getLengthInBytes();
 
         return $new;
@@ -704,23 +666,12 @@ abstract class RSA extends AsymmetricKey
         $new = clone $this;
 
         // \phpseclib4\Crypt\Hash supports algorithms that PKCS#1 doesn't support.  md5-96 and sha1-96, for example.
-        switch (strtolower($hash)) {
-            case 'md2':
-            case 'md5':
-            case 'sha1':
-            case 'sha256':
-            case 'sha384':
-            case 'sha512':
-            case 'sha224':
-            case 'sha512/224':
-            case 'sha512/256':
-                $new->mgfHash = new Hash($hash);
-                break;
-            default:
-                throw new UnsupportedAlgorithmException(
-                    'The only supported hash algorithms are: md2, md5, sha1, sha256, sha384, sha512, sha224, sha512/224, sha512/256'
-                );
-        }
+        $new->mgfHash = match (strtolower($hash)) {
+            'md2', 'md5', 'sha1', 'sha256', 'sha384', 'sha512', 'sha224', 'sha512/224', 'sha512/256' => new Hash($hash),
+            default => throw new UnsupportedAlgorithmException(
+                'The only supported hash algorithms are: md2, md5, sha1, sha256, sha384, sha512, sha224, sha512/224, sha512/256'
+            ),
+        };
         $new->mgfHLen = $new->mgfHash->getLengthInBytes();
 
         return $new;
@@ -756,7 +707,7 @@ abstract class RSA extends AsymmetricKey
      */
     public function getSaltLength(): int
     {
-        return $this->sLen !== null ? $this->sLen : $this->hLen;
+        return $this->sLen ?? $this->hLen;
     }
 
     /**

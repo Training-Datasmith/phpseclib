@@ -68,21 +68,21 @@ final class PublicKey extends EC implements Common\PublicKey
             }
 
             if ($this->curve instanceof Ed25519 && self::$engines['libsodium'] && !isset($this->context)) {
-                return sodium_crypto_sign_verify_detached($signature, $message, $this->toString('libsodium'));
+                return sodium_crypto_sign_verify_detached((string) $signature, $message, $this->toString('libsodium'));
             }
 
             $curve = $this->curve;
-            if (strlen($signature) != 2 * $curve::SIZE) {
+            if (strlen((string) $signature) != 2 * $curve::SIZE) {
                 return false;
             }
 
-            $R = substr($signature, 0, $curve::SIZE);
-            $S = substr($signature, $curve::SIZE);
+            $R = substr((string) $signature, 0, $curve::SIZE);
+            $S = substr((string) $signature, $curve::SIZE);
 
             try {
                 $R = PKCS1::extractPoint($R, $curve);
                 $R = $this->curve->convertToInternal($R);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 return false;
             }
 
@@ -104,7 +104,7 @@ final class PublicKey extends EC implements Common\PublicKey
             }
 
             $hash = new Hash($curve::HASH);
-            $k = $hash->hash($dom2 . substr($signature, 0, $curve::SIZE) . $A . $message);
+            $k = $hash->hash($dom2 . substr((string) $signature, 0, $curve::SIZE) . $A . $message);
             $k = strrev($k);
             $k = new BigInteger($k, 256);
             [, $k] = $k->divide($order);

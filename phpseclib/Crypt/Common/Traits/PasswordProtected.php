@@ -25,7 +25,7 @@ trait PasswordProtected
     /**
      * @var string|null
      */
-    private $password = null;
+    private $password;
 
     /**
      * Sets the password

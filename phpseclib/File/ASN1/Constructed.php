@@ -51,7 +51,7 @@ use phpseclib4\File\ASN1\Types\OctetString;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class Constructed implements \ArrayAccess, \Countable, \Iterator, BaseType
+class Constructed implements \ArrayAccess, \Countable, \Iterator, BaseType, \Stringable
 {
     private ?array $mapping = null;
     public ?array $decoded = null;
@@ -64,11 +64,11 @@ class Constructed implements \ArrayAccess, \Countable, \Iterator, BaseType
 
     public function __construct(
         private string $encoded,
-        private int $class,
+        private readonly int $class,
         private int $tag,
-        private int $start,
-        private int $encoded_pos,
-        private int $headerlength,
+        private readonly int $start,
+        private readonly int $encoded_pos,
+        private readonly int $headerlength,
         private string $rawheader
     ) {
     }
@@ -240,8 +240,8 @@ class Constructed implements \ArrayAccess, \Countable, \Iterator, BaseType
             $sample = ASN1::decodeBER($this->encoded, $this->start + $offset, $offset);
             $taglength = chr(ASN1::TYPE_OCTET_STRING) . ASN1::encodeLength($sample['length']);
             $temp = preg_replace('#((?:' . $taglength . '.{' . $sample['length'] . '})*).*#s', '$1', $this->encoded);
-            $this->encoded = substr($this->encoded, strlen($temp));
-            $temp = preg_replace('#' . $taglength . '(.{' . $sample['length'] . '})#s', '$1', $temp);
+            $this->encoded = substr($this->encoded, strlen((string) $temp));
+            $temp = preg_replace('#' . $taglength . '(.{' . $sample['length'] . '})#s', '$1', (string) $temp);
             $result = $temp;
         }
 
@@ -261,7 +261,7 @@ class Constructed implements \ArrayAccess, \Countable, \Iterator, BaseType
                     }
                 }
                 $decoded[] = $temp;
-            } catch (EOCException $e) {
+            } catch (EOCException) {
                 break;
             }
         }
@@ -544,7 +544,7 @@ class Constructed implements \ArrayAccess, \Countable, \Iterator, BaseType
             } catch (EncodedDataUnavailableException|ExcessivelyDeepDataException $e) {
                 $data = substr($this->encoded, $temp['start'] - $this->start, ($temp['length'] ?? $temp['actuallength']) + $temp['headerlength']);
                 return $e instanceof EncodedDataUnavailableException ? new Element($data) : new ExcessivelyDeepData($data);
-            } catch (RuntimeException $e) {
+            } catch (RuntimeException) {
                 $maymatch = false;
             }
         }

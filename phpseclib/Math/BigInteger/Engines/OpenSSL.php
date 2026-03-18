@@ -32,7 +32,7 @@ abstract class OpenSSL
      */
     public static function isValidEngine(): bool
     {
-        return extension_loaded('openssl') && static::class != __CLASS__;
+        return extension_loaded('openssl') && static::class != self::class;
     }
 
     /**

@@ -63,8 +63,6 @@ abstract class Base
 
     /**
      * Returns the length, in bytes, of the modulo
-     *
-     * @return Integer
      */
     public function getLengthInBytes(): int
     {
@@ -73,8 +71,6 @@ abstract class Base
 
     /**
      * Returns the length, in bits, of the modulo
-     *
-     * @return Integer
      */
     public function getLength(): int
     {
@@ -155,10 +151,8 @@ abstract class Base
 
     /**
      * Use a custom defined modular reduction function
-     *
-     * @return object
      */
-    public function setReduction(callable $func)
+    public function setReduction(callable $func): void
     {
         $this->factory->setReduction($func);
     }

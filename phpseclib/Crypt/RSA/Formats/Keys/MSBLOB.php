@@ -89,17 +89,11 @@ abstract class MSBLOB
             'reserved' => $reserved,
             'algo' => $algo
         ] = unpack('atype/aversion/vreserved/Valgo', Strings::shift($key, 8));
-        switch (ord($type)) {
-            case self::PUBLICKEYBLOB:
-            case self::PUBLICKEYBLOBEX:
-                $publickey = true;
-                break;
-            case self::PRIVATEKEYBLOB:
-                $publickey = false;
-                break;
-            default:
-                throw new UnexpectedValueException('Key appears to be malformed');
-        }
+        $publickey = match (ord($type)) {
+            self::PUBLICKEYBLOB, self::PUBLICKEYBLOBEX => true,
+            self::PRIVATEKEYBLOB => false,
+            default => throw new UnexpectedValueException('Key appears to be malformed'),
+        };
 
         $components = ['isPublicKey' => $publickey];
 
@@ -135,7 +129,7 @@ abstract class MSBLOB
             throw new UnexpectedValueException('Key appears to be malformed');
         }
 
-        $components[$components['isPublicKey'] ? 'publicExponent' : 'privateExponent'] = new BigInteger(strrev($pubexp), 256);
+        $components[$components['isPublicKey'] ? 'publicExponent' : 'privateExponent'] = new BigInteger(strrev((string) $pubexp), 256);
         // BYTE modulus[rsapubkey.bitlen/8]
         $components['modulus'] = new BigInteger(strrev(Strings::shift($key, $bitlen / 8)), 256);
 
@@ -182,11 +176,11 @@ abstract class MSBLOB
         $key = pack('aavV', chr(self::PRIVATEKEYBLOB), chr(2), 0, self::CALG_RSA_KEYX);
         $key .= pack('VVa*', self::RSA2, 8 * strlen($n), $e);
         $key .= $n;
-        $key .= strrev($primes[1]->toBytes());
-        $key .= strrev($primes[2]->toBytes());
-        $key .= strrev($exponents[1]->toBytes());
-        $key .= strrev($exponents[2]->toBytes());
-        $key .= strrev($coefficients[2]->toBytes());
+        $key .= strrev((string) $primes[1]->toBytes());
+        $key .= strrev((string) $primes[2]->toBytes());
+        $key .= strrev((string) $exponents[1]->toBytes());
+        $key .= strrev((string) $exponents[2]->toBytes());
+        $key .= strrev((string) $coefficients[2]->toBytes());
         $key .= strrev($d->toBytes());
 
         return Strings::base64_encode($key);

@@ -172,110 +172,37 @@ trait DN
             return $propName;
         }
 
-        switch (strtolower($propName)) {
-            case 'jurisdictionofincorporationcountryname':
-            case 'jurisdictioncountryname':
-            case 'jurisdictionc':
-                return 'jurisdictionOfIncorporationCountryName';
-            case 'jurisdictionofincorporationstateorprovincename':
-            case 'jurisdictionstateorprovincename':
-            case 'jurisdictionst':
-                return 'jurisdictionOfIncorporationStateOrProvinceName';
-            case 'jurisdictionlocalityname':
-            case 'jurisdictionl':
-                return 'jurisdictionLocalityName';
-            case 'id-at-businesscategory':
-            case 'businesscategory':
-                return 'id-at-businessCategory';
-            case 'id-at-countryname':
-            case 'countryname':
-            case 'c':
-                return 'id-at-countryName';
-            case 'id-at-organizationname':
-            case 'organizationname':
-            case 'o':
-                return 'id-at-organizationName';
-            case 'id-at-dnqualifier':
-            case 'dnqualifier':
-                return 'id-at-dnQualifier';
-            case 'id-at-commonname':
-            case 'commonname':
-            case 'cn':
-                return 'id-at-commonName';
-            case 'id-at-stateorprovincename':
-            case 'stateorprovincename':
-            case 'state':
-            case 'province':
-            case 'provincename':
-            case 'st':
-                return 'id-at-stateOrProvinceName';
-            case 'id-at-localityname':
-            case 'localityname':
-            case 'l':
-                return 'id-at-localityName';
-            case 'id-at-emailaddress':
-            case 'id-emailaddress':
-            case 'emailaddress':
-                return 'pkcs-9-at-emailAddress';
-            case 'id-at-serialnumber':
-            case 'serialnumber':
-                return 'id-at-serialNumber';
-            case 'id-at-postalcode':
-            case 'postalcode':
-                return 'id-at-postalCode';
-            case 'id-at-streetaddress':
-            case 'streetaddress':
-                return 'id-at-streetAddress';
-            case 'id-at-name':
-            case 'name':
-                return 'id-at-name';
-            case 'id-at-givenname':
-            case 'givenname':
-            case 'gn':
-                return 'id-at-givenName';
-            case 'id-at-surname':
-            case 'surname':
-            case 'sn':
-                return 'id-at-surname';
-            case 'id-at-initials':
-            case 'initials':
-                return 'id-at-initials';
-            case 'id-at-generationqualifier':
-            case 'generationqualifier':
-                return 'id-at-generationQualifier';
-            case 'id-at-organizationalunitname':
-            case 'organizationalunitname':
-            case 'ou':
-                return 'id-at-organizationalUnitName';
-            case 'id-at-organizationidentifier':
-            case 'organizationIdentifier':
-                return 'id-at-organizationIdentifier';
-            case 'id-at-pseudonym':
-            case 'pseudonym':
-                return 'id-at-pseudonym';
-            case 'id-at-title':
-            case 'title':
-                return 'id-at-title';
-            case 'id-at-description':
-            case 'description':
-                return 'id-at-description';
-            case 'id-at-role':
-            case 'role':
-                return 'id-at-role';
-            case 'id-at-uniqueidentifier':
-            case 'uniqueidentifier':
-            case 'x500uniqueidentifier':
-                return 'id-at-uniqueIdentifier';
-            case 'postaladdress':
-            case 'id-at-postaladdress':
-                return 'id-at-postalAddress';
-            case 'dc':
-            case 'domaincomponent':
-            case 'id-domaincomponent':
-                return 'id-domainComponent';
-            default:
-                throw new InvalidArgumentException("$propName is not a supported distinguished name attribute");
-        }
+        return match (strtolower($propName)) {
+            'jurisdictionofincorporationcountryname', 'jurisdictioncountryname', 'jurisdictionc' => 'jurisdictionOfIncorporationCountryName',
+            'jurisdictionofincorporationstateorprovincename', 'jurisdictionstateorprovincename', 'jurisdictionst' => 'jurisdictionOfIncorporationStateOrProvinceName',
+            'jurisdictionlocalityname', 'jurisdictionl' => 'jurisdictionLocalityName',
+            'id-at-businesscategory', 'businesscategory' => 'id-at-businessCategory',
+            'id-at-countryname', 'countryname', 'c' => 'id-at-countryName',
+            'id-at-organizationname', 'organizationname', 'o' => 'id-at-organizationName',
+            'id-at-dnqualifier', 'dnqualifier' => 'id-at-dnQualifier',
+            'id-at-commonname', 'commonname', 'cn' => 'id-at-commonName',
+            'id-at-stateorprovincename', 'stateorprovincename', 'state', 'province', 'provincename', 'st' => 'id-at-stateOrProvinceName',
+            'id-at-localityname', 'localityname', 'l' => 'id-at-localityName',
+            'id-at-emailaddress', 'id-emailaddress', 'emailaddress' => 'pkcs-9-at-emailAddress',
+            'id-at-serialnumber', 'serialnumber' => 'id-at-serialNumber',
+            'id-at-postalcode', 'postalcode' => 'id-at-postalCode',
+            'id-at-streetaddress', 'streetaddress' => 'id-at-streetAddress',
+            'id-at-name', 'name' => 'id-at-name',
+            'id-at-givenname', 'givenname', 'gn' => 'id-at-givenName',
+            'id-at-surname', 'surname', 'sn' => 'id-at-surname',
+            'id-at-initials', 'initials' => 'id-at-initials',
+            'id-at-generationqualifier', 'generationqualifier' => 'id-at-generationQualifier',
+            'id-at-organizationalunitname', 'organizationalunitname', 'ou' => 'id-at-organizationalUnitName',
+            'id-at-organizationidentifier', 'organizationIdentifier' => 'id-at-organizationIdentifier',
+            'id-at-pseudonym', 'pseudonym' => 'id-at-pseudonym',
+            'id-at-title', 'title' => 'id-at-title',
+            'id-at-description', 'description' => 'id-at-description',
+            'id-at-role', 'role' => 'id-at-role',
+            'id-at-uniqueidentifier', 'uniqueidentifier', 'x500uniqueidentifier' => 'id-at-uniqueIdentifier',
+            'postaladdress', 'id-at-postaladdress' => 'id-at-postalAddress',
+            'dc', 'domaincomponent', 'id-domaincomponent' => 'id-domainComponent',
+            default => throw new InvalidArgumentException("$propName is not a supported distinguished name attribute"),
+        };
     }
 
     // if you want to replace a DN prop you should do removeDNProp and then addDNProp
@@ -376,7 +303,7 @@ trait DN
                 $propName = $match[1];
                 $propValue = $match[2];
                 $propValue = str_replace('\/', '/', $propValue);
-                $callback = fn ($x) => chr(hexdec($x[1]));
+                $callback = fn ($x): string => chr(hexdec((string) $x[1]));
                 $propValue = preg_replace_callback('#\\\x([0-9A-Fa-f]{2})#', $callback, $propValue);
                 $temp = [
                     'type' => self::translateDNProp($propName),
@@ -395,7 +322,7 @@ trait DN
         $doubleQuoteStringPattern = '#"(?:(?:[^"\\\]|\\\.)*)"#';
         preg_match_all($doubleQuoteStringPattern, $props, $matches);
         $props = preg_replace($doubleQuoteStringPattern, "\n", $props);
-        $props = explode(',', $props);
+        $props = explode(',', (string) $props);
         foreach ($props as &$prop) {
             $prop = ltrim($prop);
             if (str_contains($prop, "\n")) {
@@ -427,7 +354,7 @@ trait DN
                 $propValue = substr($propValue, 1, -1);
             }
             // restore non-printable ascii
-            $callback = fn ($x) => chr(hexdec($x[1]));
+            $callback = fn ($x): string => chr(hexdec((string) $x[1]));
             $propValue = preg_replace_callback('#\\\([0-9A-Fa-f]{2})#', $callback, $propValue);
             // replace \" with " and \\ with \
             $propValue = str_replace(['\"', '\\\\'], ['"', '\\'], $propValue);
@@ -444,7 +371,7 @@ trait DN
                 $dn = ASN1::encodeDER($dn, Maps\Name::MAP);
                 $dn = ASN1::decodeBER($dn);
                 $rules = [];
-                $rules['rdnSequence']['*']['*'] = [self::class, 'mapInDNs'];
+                $rules['rdnSequence']['*']['*'] = self::mapInDNs(...);
                 $dn = ASN1::map($dn, Maps\Name::MAP, $rules);
                 return $dn->toArray();
             case self::DN_ASN1:
@@ -461,8 +388,8 @@ trait DN
                         if ($attr['value'] instanceof BaseString && $attr['value']->isConvertable()) {
                             try {
                                 $attr['value'] = $attr['value']->toUTF8String();
-                                $attr['value']->value = strtolower(preg_replace('/\s+/', ' ', $attr['value']->value));
-                            } catch (CharacterConversionException $e) {}
+                                $attr['value']->value = strtolower((string) preg_replace('/\s+/', ' ', $attr['value']->value));
+                            } catch (CharacterConversionException) {}
                         } elseif (is_array($attr['value']) || $attr['value'] instanceof Constructed) {
                             if ($attr['type'] == 'id-at-postalAddress') {
                                 foreach ($attr['value'] as $key=>$val) {
@@ -535,7 +462,7 @@ trait DN
             if ($value instanceof BaseString && $value->isConvertable()) {
                 try {
                     $value = (string) $value->toUTF8String();
-                } catch (CharacterConversionException $e) {}
+                } catch (CharacterConversionException) {}
             }
 
             $result[$desc] = isset($result[$desc]) ?
@@ -544,12 +471,12 @@ trait DN
             // replace \ with \\ and " with \"
             $value = str_replace(['\\', '"'], ['\\\\', '\"'], "$value");
             // replace non printable ascii
-            $callback = fn ($x) => '\\' . strtoupper(bin2hex($x[0]));
+            $callback = fn ($x): string => '\\' . strtoupper(bin2hex((string) $x[0]));
             $value = preg_replace_callback('#[^\x20-\x7E]#', $callback, $value);
             switch (true) {
                 // if there are spaces on either end or a comma in the middle then encapsulate with double quotes
-                case preg_match('#^ +| +$|,#', $value):
-                case preg_match('/^#./', $value) && !$isConstructed:
+                case preg_match('#^ +| +$|,#', (string) $value):
+                case preg_match('/^#./', (string) $value) && !$isConstructed:
                     $value = '"' . $value . '"';
             }
             $output .= $desc . ' = ' . $value;

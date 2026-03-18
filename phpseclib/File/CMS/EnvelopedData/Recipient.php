@@ -20,19 +20,16 @@ use phpseclib4\File\ASN1\Constructed;
 use phpseclib4\File\ASN1\Types\Choice;
 use phpseclib4\File\CMS\EncryptedData;
 
-class Recipient implements \ArrayAccess, \Countable, \Iterator
+class Recipient implements \ArrayAccess, \Countable, \Iterator, \Stringable
 {
     use \phpseclib4\File\Common\Traits\KeyDerivation;
-
-    public Constructed|array|null $recipient;
     public ?EncryptedData $cms = null;
-    public ?Choice $parent;
+    public ?Choice $parent = null;
     public int $depth = 0;
     public int|string $key;
 
-    public function __construct(Constructed|array|null $recipient = null)
+    public function __construct(public Constructed|array|null $recipient = null)
     {
-        $this->recipient = $recipient;
     }
 
     public static function load(string|array|Constructed $encoded): static
@@ -127,7 +124,7 @@ class Recipient implements \ArrayAccess, \Countable, \Iterator
 
     public function __toString(): string
     {
-        return $this->toString();
+        return (string) $this->toString();
     }
 
     public function __debugInfo(): array

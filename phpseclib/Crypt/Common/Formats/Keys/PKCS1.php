@@ -34,10 +34,8 @@ abstract class PKCS1 extends PKCS
 {
     /**
      * Default encryption algorithm
-     *
-     * @var string
      */
-    private static $defaultEncryptionAlgorithm = 'AES-128-CBC';
+    private static string $defaultEncryptionAlgorithm = 'AES-128-CBC';
 
     /**
      * Sets the default encryption algorithm
@@ -50,29 +48,22 @@ abstract class PKCS1 extends PKCS
     /**
      * Returns the mode constant corresponding to the mode string
      *
-     * @return int
      * @throws UnexpectedValueException if the block cipher mode is unsupported
      */
     private static function getEncryptionMode(string $mode): string
     {
-        switch ($mode) {
-            case 'CBC':
-            case 'ECB':
-            case 'CFB':
-            case 'OFB':
-            case 'CTR':
-                return $mode;
-        }
-        throw new UnexpectedValueException('Unsupported block cipher mode of operation');
+        return match ($mode) {
+            'CBC', 'ECB', 'CFB', 'OFB', 'CTR' => $mode,
+            default => throw new UnexpectedValueException('Unsupported block cipher mode of operation'),
+        };
     }
 
     /**
      * Returns a cipher object corresponding to a string
      *
-     * @return AES|DES|TripleDES
      * @throws UnexpectedValueException if the encryption algorithm is unsupported
      */
-    private static function getEncryptionObject(string $algo)
+    private static function getEncryptionObject(string $algo): \phpseclib4\Crypt\AES|\phpseclib4\Crypt\TripleDES|\phpseclib4\Crypt\DES
     {
         $modes = '(CBC|ECB|CFB|OFB|CTR)';
         switch (true) {
@@ -135,7 +126,7 @@ abstract class PKCS1 extends PKCS
             $key = preg_replace('#^(?:Proc-Type|DEK-Info): .*#m', '', $key);
             try {
                 $ciphertext = ASN1::extractBER($key);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 $ciphertext = $key;
             }
             $crypto = self::getEncryptionObject($matches[1]);

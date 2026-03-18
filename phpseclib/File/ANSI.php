@@ -29,52 +29,38 @@ class ANSI
 {
     /**
      * Max Width
-     *
-     * @var int
      */
-    private $max_x;
+    private int $max_x;
 
     /**
      * Max Height
-     *
-     * @var int
      */
-    private $max_y;
+    private int $max_y;
 
     /**
      * Max History
-     *
-     * @var int
      */
-    private $max_history;
+    private int $max_history;
 
     /**
      * History
-     *
-     * @var array
      */
-    private $history;
+    private array $history;
 
     /**
      * History Attributes
-     *
-     * @var array
      */
-    private $history_attrs;
+    private ?array $history_attrs = null;
 
     /**
      * Current Column
-     *
-     * @var int
      */
-    private $x;
+    private int|float $x;
 
     /**
      * Current Row
-     *
-     * @var int
      */
-    private $y;
+    private ?int $y = null;
 
     /**
      * Old Column
@@ -95,49 +81,41 @@ class ANSI
      *
      * @var object
      */
-    private $base_attr_cell;
+    private \stdClass $base_attr_cell;
 
     /**
      * The current attribute cell
      *
      * @var object
      */
-    private $attr_cell;
+    private \stdClass $attr_cell;
 
     /**
      * An empty attribute row
-     *
-     * @var array
      */
-    private $attr_row;
+    private array $attr_row;
 
     /**
      * The current screen text
      *
      * @var list<string>
      */
-    private $screen;
+    private array $screen;
 
     /**
      * The current screen attributes
-     *
-     * @var array
      */
-    private $attrs;
+    private array $attrs;
 
     /**
      * Current ANSI code
-     *
-     * @var string
      */
-    private $ansi;
+    private string $ansi;
 
     /**
      * Tokenization
-     *
-     * @var array
      */
-    private $tokenization;
+    private ?array $tokenization = null;
 
     /**
      * Default Constructor.
@@ -473,9 +451,7 @@ class ANSI
             $output .= $close . $open;
         }
 
-        $output .= htmlspecialchars($char);
-
-        return $output;
+        return $output . htmlspecialchars($char);
     }
 
     /**

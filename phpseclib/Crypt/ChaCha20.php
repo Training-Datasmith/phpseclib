@@ -159,7 +159,7 @@ class ChaCha20 extends Salsa20
                 return $plaintext;
             }
             $newtag = $this->poly1305($ciphertext);
-            if ($this->oldtag != substr($newtag, 0, strlen($this->oldtag))) {
+            if (!str_starts_with($newtag, $this->oldtag)) {
                 $this->oldtag = false;
                 throw new BadDecryptionException('Derived authentication tag and supplied authentication tag do not match');
             }
@@ -324,7 +324,7 @@ class ChaCha20 extends Salsa20
      * AES in CTR mode with the PHP engine takes 1.19s. Salsa20 / ChaCha20 do not benefit as much from the Eval
      * approach due to the fact that there are a lot less variables to de-reference, fewer loops to unroll, etc
      */
-    protected static function salsa20(string $x)
+    protected static function salsa20(string $x): string
     {
         [, $x0, $x1, $x2, $x3, $x4, $x5, $x6, $x7, $x8, $x9, $x10, $x11, $x12, $x13, $x14, $x15] = unpack('V*', $x);
         $z0 = $x0;

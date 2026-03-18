@@ -399,7 +399,7 @@ class BCMath extends Engine
         try {
             $class = static::$modexpEngine[static::class];
             return $class::powModHelper($this, $e, $n, static::class);
-        } catch (\Exception $err) {
+        } catch (\Exception) {
             return BCMath\DefaultEngine::powModHelper($this, $e, $n, static::class);
         }
     }
@@ -477,8 +477,6 @@ class BCMath extends Engine
         if ($this->value[-1] % 2 == 0) {
             return false;
         }
-
-        $value = $this->value;
 
         foreach (self::PRIMES as $prime) {
             $r = bcmod($this->value, (string)$prime, 0);

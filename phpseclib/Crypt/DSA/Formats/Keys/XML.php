@@ -49,7 +49,7 @@ abstract class XML
         $use_errors = libxml_use_internal_errors(true);
 
         $dom = new \DOMDocument();
-        if (substr($key, 0, 5) != '<?xml') {
+        if (!str_starts_with($key, '<?xml')) {
             $key = '<xml>' . $key . '</xml>';
         }
         if (!$dom->loadXML($key)) {
@@ -97,15 +97,10 @@ abstract class XML
         if (!isset($components['y'])) {
             throw new UnexpectedValueException('Key is missing y component');
         }
-
-        switch (true) {
-            case !isset($components['p']):
-            case !isset($components['q']):
-            case !isset($components['g']):
-                return ['y' => $components['y']];
-        }
-
-        return $components;
+        return match (true) {
+            !isset($components['p']), !isset($components['q']), !isset($components['g']) => ['y' => $components['y']],
+            default => $components,
+        };
     }
 
     /**

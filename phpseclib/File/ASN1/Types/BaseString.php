@@ -22,7 +22,7 @@ use phpseclib4\Exception\CharacterConversionException;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-abstract class BaseString implements BaseType
+abstract class BaseString implements BaseType, \Stringable
 {
     use Common;
 
@@ -86,7 +86,6 @@ abstract class BaseString implements BaseType
                     $c = ($c << 8) | ord($in[$i++]);
                     // fall-through
                 case $insize == 1:
-                    break;
                 // only single byte UTF-8 characters have the first bit set to 1
                 case ($c & 0x80) == 0x00:
                     break;

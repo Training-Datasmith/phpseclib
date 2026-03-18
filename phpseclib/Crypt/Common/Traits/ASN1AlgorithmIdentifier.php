@@ -104,8 +104,6 @@ trait ASN1AlgorithmIdentifier
 
     /**
      * Returns a SymmetricKey object based on a PBES1 $algo
-     *
-     * @return SymmetricKey
      */
     private static function getPBES1EncryptionObject(string $algo): SymmetricKey
     {
@@ -169,17 +167,10 @@ trait ASN1AlgorithmIdentifier
      */
     private static function getPBES1KDF(string $algo): string
     {
-        switch ($algo) {
-            case 'pbeWithMD2AndDES-CBC':
-            case 'pbeWithMD2AndRC2-CBC':
-            case 'pbeWithMD5AndDES-CBC':
-            case 'pbeWithMD5AndRC2-CBC':
-            case 'pbeWithSHA1AndDES-CBC':
-            case 'pbeWithSHA1AndRC2-CBC':
-                return 'pbkdf1';
-        }
-
-        return 'pkcs12';
+        return match ($algo) {
+            'pbeWithMD2AndDES-CBC', 'pbeWithMD2AndRC2-CBC', 'pbeWithMD5AndDES-CBC', 'pbeWithMD5AndRC2-CBC', 'pbeWithSHA1AndDES-CBC', 'pbeWithSHA1AndRC2-CBC' => 'pbkdf1',
+            default => 'pkcs12',
+        };
     }
 
     /**
@@ -319,7 +310,7 @@ trait ASN1AlgorithmIdentifier
                     throw new RuntimeException('Unable to decode BER', 0, $e);
                 }
                 $meta['meta']['prf'] = $prf['algorithm'];
-                $hash = str_replace('-', '/', substr((string) $prf['algorithm'], 11));
+                $hash = str_replace('-', '/', substr($prf['algorithm'], 11));
                 $params = [
                     $password,
                     'pbkdf2',
@@ -349,7 +340,7 @@ trait ASN1AlgorithmIdentifier
 
         if ($encryptionAlgorithm == 'id-PBES2') {
             $crypto = self::getPBES2EncryptionObject($encryptionScheme);
-            $hash = str_replace('-', '/', substr($prf, 11));
+            $hash = str_replace('-', '/', substr((string) $prf, 11));
             $kdf = 'pbkdf2';
             $iv = Random::string($crypto->getBlockLength() >> 3);
 

@@ -37,7 +37,7 @@ trait Fingerprint
      */
     public function getFingerprint(string $algorithm = 'md5'): string
     {
-        $type = self::validatePlugin('Keys', 'OpenSSH', 'savePublicKey');
+        self::validatePlugin('Keys', 'OpenSSH', 'savePublicKey');
         $key = $this->toString('OpenSSH', ['binary' => true]);
         switch ($algorithm) {
             case 'sha256':
@@ -45,7 +45,7 @@ trait Fingerprint
                 $base = base64_encode($hash->hash($key));
                 return substr($base, 0, strlen($base) - 1);
             case 'md5':
-                return substr(chunk_split(md5($key), 2, ':'), 0, -1);
+                return substr(chunk_split(md5((string) $key), 2, ':'), 0, -1);
             default:
                 throw new UnsupportedAlgorithmException('The only two supported fingerprinting algorithms are sha256 and md5');
         }

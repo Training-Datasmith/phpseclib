@@ -39,7 +39,7 @@ use phpseclib4\File\ASN1\Types\OctetString;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class PFX implements \ArrayAccess, \Countable, \Iterator
+class PFX implements \ArrayAccess, \Countable, \Iterator, \Stringable
 {
     use \phpseclib4\Crypt\Common\Traits\ASN1AlgorithmIdentifier;
 
@@ -105,7 +105,7 @@ class PFX implements \ArrayAccess, \Countable, \Iterator
                                 'CertBag' => self::handleCertBag("$value[bagValue]"),
                                 default => $value['bagValue']
                             };
-                        } catch (\Exception $e) {
+                        } catch (\Exception) {
                         }
                     }
                     break;
@@ -241,7 +241,7 @@ class PFX implements \ArrayAccess, \Countable, \Iterator
                                     continue 2;
                             }
                             foreach ($attr['value'] as $attrValue) {
-                                $$var[count($certs)][] = $attrValue;
+                                ${$var}[count($certs)][] = $attrValue;
                             }
                         }
                         $certs[] = $subvalue['bagValue']['certValue'];
@@ -554,9 +554,7 @@ class PFX implements \ArrayAccess, \Countable, \Iterator
             $this->pfx = $temp->pfx;
         }
         if ($this->pfx->hasEncoded()) {
-            return;
         }
-        "$this";
     }
 
     private function getNames(string $type): array
@@ -731,8 +729,7 @@ class PFX implements \ArrayAccess, \Countable, \Iterator
         if (isset($public)) {
             $source->copySigningX509Attributes($public);
         }
-        $signature = $private->sign($source);
 
-        return $signature;
+        return $private->sign($source);
     }
 }

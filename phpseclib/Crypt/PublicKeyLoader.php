@@ -73,7 +73,7 @@ abstract class PublicKeyLoader
                 ASN1::enableBlobsOnBadDecodes();
             }
             return $key;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
         }
 
         if ($reenable) {

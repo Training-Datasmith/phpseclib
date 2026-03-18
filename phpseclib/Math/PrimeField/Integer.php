@@ -24,7 +24,7 @@ use phpseclib4\Math\Common\FiniteField\Integer as Base;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class Integer extends Base
+class Integer extends Base implements \Stringable
 {
     /**
      * Holds the PrimeField's value
@@ -32,13 +32,6 @@ class Integer extends Base
      * @var BigInteger
      */
     protected $value;
-
-    /**
-     * Keeps track of current instance
-     *
-     * @var int
-     */
-    protected $instanceID;
 
     /**
      * Holds the PrimeField's modulo
@@ -78,13 +71,15 @@ class Integer extends Base
     /**
      * Default constructor
      */
-    public function __construct(int $instanceID, ?BigInteger $num = null)
+    public function __construct(/**
+     * Keeps track of current instance
+     */
+    protected int $instanceID, ?BigInteger $num = null)
     {
-        $this->instanceID = $instanceID;
         if (!isset($num)) {
-            $this->value = clone static::$zero[$instanceID];
+            $this->value = clone static::$zero[$this->instanceID];
         } else {
-            $reduce = static::$reduce[$instanceID];
+            $reduce = static::$reduce[$this->instanceID];
             $this->value = $reduce($num);
         }
     }
@@ -162,8 +157,6 @@ class Integer extends Base
 
     /**
      * Adds two PrimeFieldIntegers.
-     *
-     * @return static
      */
     public function add(self $x): Integer
     {
@@ -180,8 +173,6 @@ class Integer extends Base
 
     /**
      * Subtracts two PrimeFieldIntegers.
-     *
-     * @return static
      */
     public function subtract(self $x): Integer
     {
@@ -198,8 +189,6 @@ class Integer extends Base
 
     /**
      * Multiplies two PrimeFieldIntegers.
-     *
-     * @return static
      */
     public function multiply(self $x): Integer
     {
@@ -210,8 +199,6 @@ class Integer extends Base
 
     /**
      * Divides two PrimeFieldIntegers.
-     *
-     * @return static
      */
     public function divide(self $x): Integer
     {
@@ -223,8 +210,6 @@ class Integer extends Base
 
     /**
      * Performs power operation on a PrimeFieldInteger.
-     *
-     * @return static
      */
     public function pow(BigInteger $x): Integer
     {
@@ -240,7 +225,7 @@ class Integer extends Base
      * @link https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm
      * @return static|false
      */
-    public function squareRoot()
+    public function squareRoot(): false|self
     {
         if (!isset(static::$one[$this->instanceID])) {
             static::$one[$this->instanceID] = new BigInteger(1);
@@ -301,8 +286,6 @@ class Integer extends Base
      *
      * A negative number can be written as 0-12. With modulos, 0 is the same thing as the modulo
      * so 0-12 is the same thing as modulo-12
-     *
-     * @return static
      */
     public function negate(): Integer
     {
@@ -397,10 +380,8 @@ class Integer extends Base
 
     /**
      *  __toString() magic method
-     *
-     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->value;
     }

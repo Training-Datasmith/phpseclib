@@ -23,7 +23,7 @@ namespace phpseclib4\File\ASN1;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class Element
+class Element implements \Stringable
 {
     public array $metadata = [];
 

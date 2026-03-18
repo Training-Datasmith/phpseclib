@@ -192,7 +192,7 @@ final class PrivateKey extends RSA implements Common\PrivateKey
         // be output.
 
         $emLen = ($emBits + 1) >> 3; // ie. ceil($emBits / 8)
-        $sLen = $this->sLen !== null ? $this->sLen : $this->hLen;
+        $sLen = $this->sLen ?? $this->hLen;
 
         $mHash = $this->hash->hash($m);
         if ($emLen < $this->hLen + $sLen + 2) {
@@ -207,19 +207,16 @@ final class PrivateKey extends RSA implements Common\PrivateKey
         $dbMask = $this->mgf1($h, $emLen - $this->hLen - 1); // ie. stlren($db)
         $maskedDB = $db ^ $dbMask;
         $maskedDB[0] = ~chr(256 - (1 << ($emBits & 7))) & $maskedDB[0];
-        $em = $maskedDB . $h . chr(0xBC);
 
-        return $em;
+        return $maskedDB . $h . chr(0xBC);
     }
 
     /**
      * RSASSA-PSS-SIGN
      *
      * See {@link http://tools.ietf.org/html/rfc3447#section-8.1.1 RFC3447#section-8.1.1}.
-     *
-     * @return bool|string
      */
-    private function rsassa_pss_sign(string $m)
+    private function rsassa_pss_sign(string $m): string
     {
         // EMSA-PSS encoding
 
@@ -251,7 +248,7 @@ final class PrivateKey extends RSA implements Common\PrivateKey
         // too short" and stop.
         try {
             $em = $this->emsa_pkcs1_v1_5_encode($m, $this->k);
-        } catch (\LengthException $e) {
+        } catch (\LengthException) {
             throw new LengthException('RSA modulus too short');
         }
 
@@ -271,7 +268,6 @@ final class PrivateKey extends RSA implements Common\PrivateKey
      *
      * @see self::verify()
      * @param string $message
-     * @return string
      */
     public function sign(string|Signable $source): string
     {
@@ -284,15 +280,10 @@ final class PrivateKey extends RSA implements Common\PrivateKey
         } else {
             $message = $source;
         }
-        switch ($this->signaturePadding) {
-            case self::SIGNATURE_PKCS1:
-            case self::SIGNATURE_RELAXED_PKCS1:
-                $signature = $this->rsassa_pkcs1_v1_5_sign($message);
-                break;
-            //case self::SIGNATURE_PSS:
-            default:
-                $signature = $this->rsassa_pss_sign($message);
-        }
+        $signature = match ($this->signaturePadding) {
+            self::SIGNATURE_PKCS1, self::SIGNATURE_RELAXED_PKCS1 => $this->rsassa_pkcs1_v1_5_sign($message),
+            default => $this->rsassa_pss_sign($message),
+        };
         if ($source instanceof Signable) {
             $source->setSignature($signature);
         }
@@ -370,7 +361,6 @@ final class PrivateKey extends RSA implements Common\PrivateKey
         // EME-OAEP decoding
 
         $lHash = $this->hash->hash($this->label);
-        $y = ord($em[0]);
         $maskedSeed = substr($em, 1, $this->hLen);
         $maskedDB = substr($em, $this->hLen + 1);
         $seedMask = $this->mgf1($maskedDB, $this->hLen);
@@ -425,15 +415,11 @@ final class PrivateKey extends RSA implements Common\PrivateKey
      */
     public function decrypt(string $ciphertext): string
     {
-        switch ($this->encryptionPadding) {
-            case self::ENCRYPTION_NONE:
-                return $this->raw_encrypt($ciphertext);
-            case self::ENCRYPTION_PKCS1:
-                return $this->rsaes_pkcs1_v1_5_decrypt($ciphertext);
-            //case self::ENCRYPTION_OAEP:
-            default:
-                return $this->rsaes_oaep_decrypt($ciphertext);
-        }
+        return match ($this->encryptionPadding) {
+            self::ENCRYPTION_NONE => $this->raw_encrypt($ciphertext),
+            self::ENCRYPTION_PKCS1 => $this->rsaes_pkcs1_v1_5_decrypt($ciphertext),
+            default => $this->rsaes_oaep_decrypt($ciphertext),
+        };
     }
 
     /**

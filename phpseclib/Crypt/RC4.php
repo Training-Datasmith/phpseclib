@@ -84,9 +84,8 @@ class RC4 extends StreamCipher
      * The Key Stream for decryption and encryption
      *
      * @see self::setKey()
-     * @var array
      */
-    private $stream;
+    private ?array $stream = null;
 
     /**
      * Test for engine validity

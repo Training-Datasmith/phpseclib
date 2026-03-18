@@ -92,7 +92,7 @@ abstract class PKCS1 extends Progenitor
 
         try {
             $key = ASN1::map($decoded, Maps\RSAPublicKey::MAP)->toArray();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new RuntimeException('Unable to perform ASN1 mapping');
         }
 
@@ -165,7 +165,6 @@ abstract class PKCS1 extends Progenitor
     /**
      * Negative numbers make no sense in RSA so convert them to positiveAdd commentMore actions
      *
-     * @param BigInteger $x
      * @return string
      */
     private static function makePositive(BigInteger $x): BigInteger

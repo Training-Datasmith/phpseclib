@@ -30,18 +30,15 @@ use phpseclib4\File\CMS;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class DigestedData implements \ArrayAccess, \Countable, \Iterator
+class DigestedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
 {
     private Constructed|array $cms;
 
-    /**
-     * @param string $data
-     */
     public function __construct(string $data, $hashAlgorithm = 'sha256')
     {
         ASN1::loadOIDs('Hashes');
         $hash = new Hash($hashAlgorithm);
-        if (substr($hashAlgorithm, 0, 2) != 'md') {
+        if (!str_starts_with((string) $hashAlgorithm, 'md')) {
             $hashAlgorithm = "id-$hashAlgorithm";
         }
         $this->cms = [
@@ -65,7 +62,7 @@ class DigestedData implements \ArrayAccess, \Countable, \Iterator
     // need to call CMS\SignedData::load()
     public static function load(string|array|Constructed $encoded): self
     {
-        $r = new \ReflectionClass(__CLASS__);
+        $r = new \ReflectionClass(self::class);
         $cms = $r->newInstanceWithoutConstructor();
         $cms->cms = is_string($encoded) ? self::loadString($encoded) : $encoded;
         return $cms;

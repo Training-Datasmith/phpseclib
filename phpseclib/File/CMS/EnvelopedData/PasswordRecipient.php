@@ -26,17 +26,14 @@ use phpseclib4\File\CMS\EnvelopedData;
 
 class PasswordRecipient extends Recipient implements DerivableKey, SearchableKey
 {
-    private ?string $password = null;
-
     protected static function loadString(string $encoded): Constructed
     {
         //ASN1::disableCacheInvalidation();
         $rules = [];
-        $rules['keyEncryptionAlgorithm'] = $rules['keyDerivationAlgorithm'] = [self::class, 'mapInAlgoParams'];
+        $rules['keyEncryptionAlgorithm'] = $rules['keyDerivationAlgorithm'] = self::mapInAlgoParams(...);
         $decoded = ASN1::decodeBER($encoded);
-        $recipient = ASN1::map($decoded, Maps\PasswordRecipientInfo::MAP, $rules);
         //ASN1::enableCacheInvalidation();
-        return $recipient;
+        return ASN1::map($decoded, Maps\PasswordRecipientInfo::MAP, $rules);
     }
 
     public static function mapInAlgoParams(Constructed $algorithm): void
@@ -94,8 +91,6 @@ class PasswordRecipient extends Recipient implements DerivableKey, SearchableKey
 
     public function toString(): string
     {
-        $recipient = ASN1::encodeDER($this->recipient, Maps\PasswordRecipientInfo::MAP);
-
-        return $recipient;
+        return ASN1::encodeDER($this->recipient, Maps\PasswordRecipientInfo::MAP);
     }
 }

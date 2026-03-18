@@ -104,7 +104,6 @@ class Ed25519 extends TwistedEdwards
      *
      * Used by EC\Keys\Common.php
      *
-     * @param boolean $sign
      * @return object[]
      */
     public function recoverX(BigInteger $y, bool $sign): array
@@ -157,10 +156,8 @@ class Ed25519 extends TwistedEdwards
      * Implements steps 1-3 at https://tools.ietf.org/html/rfc8032#section-5.1.5
      *
      * Used by the various key handlers
-     *
-     * @return array
      */
-    public function extractSecret(string $str)
+    public function extractSecret(string $str): array
     {
         if (strlen($str) != 32) {
             throw new LengthException('Private Key should be 32-bytes long');
@@ -198,9 +195,8 @@ class Ed25519 extends TwistedEdwards
         if ($x->isOdd()) {
             $y[0] = $y[0] | chr(0x80);
         }
-        $y = strrev($y);
 
-        return $y;
+        return strrev((string) $y);
     }
 
     /**

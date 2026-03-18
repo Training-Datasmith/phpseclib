@@ -40,7 +40,7 @@ abstract class Base extends BCMath
      */
     public static function isValidEngine(): bool
     {
-        return static::class != __CLASS__;
+        return static::class != self::class;
     }
 
     /**

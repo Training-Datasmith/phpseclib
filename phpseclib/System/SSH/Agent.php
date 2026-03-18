@@ -87,28 +87,22 @@ class Agent
 
     /**
      * Agent forwarding status
-     *
-     * @var int
      */
-    private $forward_status = self::FORWARD_NONE;
+    private int $forward_status = self::FORWARD_NONE;
 
     /**
      * Buffer for accumulating forwarded authentication
      * agent data arriving on SSH data channel destined
      * for agent unix socket
-     *
-     * @var string
      */
-    private $socket_buffer = '';
+    private string $socket_buffer = '';
 
     /**
      * Tracking the number of bytes we are expecting
      * to arrive for the agent socket on the SSH data
      * channel
-     *
-     * @var int
      */
-    private $expected_bytes = 0;
+    private int|float $expected_bytes = 0;
 
     /**
      * Default Constructor
@@ -120,16 +114,11 @@ class Agent
     public function __construct(?string $address = null)
     {
         if (!$address) {
-            switch (true) {
-                case isset($_SERVER['SSH_AUTH_SOCK']):
-                    $address = $_SERVER['SSH_AUTH_SOCK'];
-                    break;
-                case isset($_ENV['SSH_AUTH_SOCK']):
-                    $address = $_ENV['SSH_AUTH_SOCK'];
-                    break;
-                default:
-                    throw new BadConfigurationException('SSH_AUTH_SOCK not found');
-            }
+            $address = match (true) {
+                isset($_SERVER['SSH_AUTH_SOCK']) => $_SERVER['SSH_AUTH_SOCK'],
+                isset($_ENV['SSH_AUTH_SOCK']) => $_ENV['SSH_AUTH_SOCK'],
+                default => throw new BadConfigurationException('SSH_AUTH_SOCK not found'),
+            };
         }
 
         if (in_array('unix', stream_get_transports())) {
@@ -138,7 +127,7 @@ class Agent
                 throw new RuntimeException("Unable to connect to ssh-agent (Error $errno: $errstr)");
             }
         } else {
-            if (substr($address, 0, 9) != '\\\\.\\pipe\\' || str_contains(substr($address, 9), '\\')) {
+            if (!str_starts_with($address, '\\\\.\\pipe\\') || str_contains(substr($address, 9), '\\')) {
                 throw new RuntimeException('Address is not formatted as a named pipe should be');
             }
 
@@ -188,7 +177,7 @@ class Agent
                 case 'ecdsa-sha2-nistp256':
                 case 'ecdsa-sha2-nistp384':
                 case 'ecdsa-sha2-nistp521':
-                    $key = PublicKeyLoader::load($key_type . ' ' . base64_encode($key_blob));
+                    $key = PublicKeyLoader::load($key_type . ' ' . base64_encode((string) $key_blob));
             }
             // resources are passed by reference by default
             if (isset($key)) {
@@ -267,7 +256,7 @@ class Agent
      * @return string Data from SSH Agent
      * @throws RuntimeException on connection errors
      */
-    public function forwardData(string $data)
+    public function forwardData(string $data): false|string
     {
         if ($this->expected_bytes > 0) {
             $this->socket_buffer .= $data;

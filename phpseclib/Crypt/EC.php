@@ -89,17 +89,13 @@ abstract class EC extends AsymmetricKey
 
     /**
      * Signature Format (Short)
-     *
-     * @var string
      */
-    protected $shortFormat;
+    protected string $shortFormat;
 
     /**
      * Curve Name
-     *
-     * @var string
      */
-    private $curveName;
+    private ?string $curveName = null;
 
     /**
      * Curve Order
@@ -193,7 +189,7 @@ abstract class EC extends AsymmetricKey
         $curveName = $curve;
         if (preg_match('#(?:^curve|^ed)\d+$#', $curveName)) {
             $curveName = ucfirst($curveName);
-        } elseif (substr($curveName, 0, 10) == 'brainpoolp') {
+        } elseif (str_starts_with($curveName, 'brainpoolp')) {
             $curveName = 'brainpoolP' . substr($curveName, 10);
         }
         $curve = '\phpseclib4\Crypt\EC\Curves\\' . $curveName;
@@ -291,8 +287,6 @@ abstract class EC extends AsymmetricKey
      * Returns the curve
      *
      * Returns a string if it's a named curve, an array if not
-     *
-     * @return string|array
      */
     public function getCurve(): string|array
     {
@@ -373,7 +367,7 @@ abstract class EC extends AsymmetricKey
     public function getEncodedCoordinates(): string
     {
         if ($this->curve instanceof MontgomeryCurve) {
-            return strrev($this->QA[0]->toBytes(true));
+            return strrev((string) $this->QA[0]->toBytes(true));
         }
         if ($this->curve instanceof TwistedEdwardsCurve) {
             return $this->curve->encodePoint($this->QA);
@@ -481,10 +475,8 @@ abstract class EC extends AsymmetricKey
 
     /**
      * __toString() magic method
-     *
-     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         if ($this->curve instanceof MontgomeryCurve) {
             return '';

@@ -235,7 +235,7 @@ abstract class PKCS8 extends Progenitor
 
         if ($curve instanceof TwistedEdwardsCurve) {
             return self::wrapPrivateKey(
-                key: "\x04" . chr(strlen($secret)) . $secret,
+                key: "\x04" . chr(strlen((string) $secret)) . $secret,
                 password: $password,
                 oid: $curve instanceof Ed25519 ? 'id-Ed25519' : 'id-Ed448',
                 options: $options

@@ -25,7 +25,7 @@ use phpseclib4\Math\BigInteger;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-abstract class AsymmetricKey
+abstract class AsymmetricKey implements \Stringable
 {
     /**
      * Precomputed Zero
@@ -50,33 +50,27 @@ abstract class AsymmetricKey
 
     /**
      * Hash function
-     *
-     * @var Hash
      */
-    protected $hash;
+    protected \phpseclib4\Crypt\Hash $hash;
 
     /**
      * HMAC function
-     *
-     * @var Hash
      */
-    private $hmac;
+    private \phpseclib4\Crypt\Hash $hmac;
 
     /**
      * Supported plugins (lower case)
      *
      * @see self::initialize_static_variables()
-     * @var array
      */
-    private static $plugins = [];
+    private static array $plugins = [];
 
     /**
      * Invisible plugins
      *
      * @see self::initialize_static_variables()
-     * @var array
      */
-    private static $invisiblePlugins = [];
+    private static array $invisiblePlugins = [];
 
     /**
      * Available Engines
@@ -140,7 +134,7 @@ abstract class AsymmetricKey
             }
             try {
                 $components = $format::load($key, $password);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 $components = false;
             }
             if ($components !== false) {
@@ -208,8 +202,6 @@ abstract class AsymmetricKey
 
     /**
      * Load the key, assuming a specific format
-     *
-     * @return static
      */
     public static function loadFormat(string $type, string $key, #[SensitiveParameter] ?string $password = null): AsymmetricKey
     {
@@ -412,12 +404,10 @@ abstract class AsymmetricKey
 
     /**
      * __toString() magic method
-     *
-     * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->toString('PKCS8');
+        return (string) $this->toString('PKCS8');
     }
 
     /**
@@ -502,11 +492,11 @@ abstract class AsymmetricKey
         $rolen = $this->q->getLengthInBytes();
         if (strlen($out) < $rolen) {
             return str_pad($out, $rolen, "\0", STR_PAD_LEFT);
-        } elseif (strlen($out) > $rolen) {
-            return substr($out, -$rolen);
-        } else {
-            return $out;
         }
+        if (strlen($out) > $rolen) {
+            return substr($out, -$rolen);
+        }
+        return $out;
     }
 
     /**

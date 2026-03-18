@@ -71,13 +71,10 @@ trait ASN1Signature
         }
 
         if ($key instanceof DSA) {
-            switch ($hash) {
-                case 'sha1':
-                case 'sha224':
-                case 'sha256':
-                    return ['algorithm' => 'id-dsa-with-' . $hash];
-            }
-            throw new UnsupportedAlgorithmException('The only supported hash algorithms for DSA are: sha1, sha224, sha256');
+            return match ($hash) {
+                'sha1', 'sha224', 'sha256' => ['algorithm' => 'id-dsa-with-' . $hash],
+                default => throw new UnsupportedAlgorithmException('The only supported hash algorithms for DSA are: sha1, sha224, sha256'),
+            };
         }
 
         if ($key instanceof EC) {
@@ -86,15 +83,10 @@ trait ASN1Signature
                 case 'Ed448':
                     return ['algorithm' => 'id-' . $key->getCurve()];
             }
-            switch ($hash) {
-                case 'sha1':
-                case 'sha224':
-                case 'sha256':
-                case 'sha384':
-                case 'sha512':
-                    return ['algorithm' => 'ecdsa-with-' . strtoupper($hash)];
-            }
-            throw new UnsupportedAlgorithmException('The only supported hash algorithms for EC are: sha1, sha224, sha256, sha384, sha512');
+            return match ($hash) {
+                'sha1', 'sha224', 'sha256', 'sha384', 'sha512' => ['algorithm' => 'ecdsa-with-' . strtoupper($hash)],
+                default => throw new UnsupportedAlgorithmException('The only supported hash algorithms for EC are: sha1, sha224, sha256, sha384, sha512'),
+            };
         }
 
         throw new UnsupportedAlgorithmException('The only supported public key classes are: RSA, DSA, EC');
@@ -129,16 +121,11 @@ trait ASN1Signature
         }
 
         if ($key instanceof DSA) {
-            switch ($signatureAlgorithm) {
-                case 'id-dsa-with-sha1':
-                case 'id-dsa-with-sha224':
-                case 'id-dsa-with-sha256':
-                    $key = $key
-                        ->withHash(preg_replace('#^id-dsa-with-#', '', strtolower($signatureAlgorithm)));
-                    break;
-                default:
-                    throw new UnsupportedAlgorithmException('Signature algorithm unsupported');
-            }
+            $key = match ($signatureAlgorithm) {
+                'id-dsa-with-sha1', 'id-dsa-with-sha224', 'id-dsa-with-sha256' => $key
+                    ->withHash(preg_replace('#^id-dsa-with-#', '', strtolower($signatureAlgorithm))),
+                default => throw new UnsupportedAlgorithmException('Signature algorithm unsupported'),
+            };
         }
 
         if ($key instanceof EC) {

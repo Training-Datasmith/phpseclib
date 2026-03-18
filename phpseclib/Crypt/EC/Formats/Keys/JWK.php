@@ -104,10 +104,8 @@ abstract class JWK extends Progenitor
 
     /**
      * Returns the alias that corresponds to a curve
-     *
-     * @return string
      */
-    private static function getAlias(BaseCurve $curve)
+    private static function getAlias(BaseCurve $curve): string
     {
         switch (true) {
             case $curve instanceof secp256r1:

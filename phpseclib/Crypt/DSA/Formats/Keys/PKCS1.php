@@ -89,7 +89,7 @@ abstract class PKCS1 extends Progenitor
             if (ASN1::map($decoded, Maps\DSAPublicKey::MAP) instanceof BigInteger) {
                 throw new RuntimeException('Key appears to be a DSAPublicKey, which is unsupported');
             }
-        } catch (\Exception $e) {
+        } catch (\Exception) {
         }
 
         throw new RuntimeException('Unable to perform ASN1 mapping');

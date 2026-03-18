@@ -198,8 +198,6 @@ class TwistedEdwards extends Base
 
     /**
      * Tests whether or not the x / y values satisfy the equation
-     *
-     * @return boolean
      */
     public function verifyPoint(array $p): bool
     {

@@ -37,7 +37,7 @@ abstract class JWK
 
         $key = preg_replace('#\s#', '', $key); // remove whitespace
 
-        $key = json_decode($key, null, 512, JSON_THROW_ON_ERROR);
+        $key = json_decode((string) $key, null, 512, JSON_THROW_ON_ERROR);
 
         if (isset($key->kty)) {
             return $key;

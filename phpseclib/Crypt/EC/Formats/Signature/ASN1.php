@@ -31,8 +31,6 @@ abstract class ASN1
 {
     /**
      * Loads a signature
-     *
-     * @return array
      */
     public static function load(string $sig): array
     {

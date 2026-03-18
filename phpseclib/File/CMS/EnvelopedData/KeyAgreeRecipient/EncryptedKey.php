@@ -28,27 +28,24 @@ use phpseclib4\File\CMS\EnvelopedData\KeyAgreeRecipient;
 use phpseclib4\File\CMS\EnvelopedData\SearchableKey;
 use phpseclib4\File\X509;
 
-class EncryptedKey implements DerivableKey, SearchableKey, \ArrayAccess, \Countable, \Iterator
+class EncryptedKey implements DerivableKey, SearchableKey, \ArrayAccess, \Countable, \Iterator, \Stringable
 {
     use \phpseclib4\File\Common\Traits\KeyDerivation;
-
-    public Constructed|array $encryptedKey;
     public EncryptedData $cms;
     public KeyAgreeRecipient $recipient;
     private EC\PrivateKey $kek;
-    public ?Constructed $parent;
+    public ?Constructed $parent = null;
     public int $depth = 0;
     public int|string $key;
 
-    public function __construct(Constructed|array $key)
+    public function __construct(public Constructed|array $encryptedKey)
     {
-        $this->encryptedKey = $key;
     }
 
     public static function load(string|array|Constructed $encoded): static
     {
-        $r = new \ReflectionClass(__CLASS__);
-        $cms = $r->newInstanceWithoutConstructor();
+        $r = new \ReflectionClass(self::class);
+        $r->newInstanceWithoutConstructor();
         $temp->encryptedKey = is_string($encoded) ? static::loadString($encoded) : $encoded;
         return $temp;
     }
@@ -57,9 +54,8 @@ class EncryptedKey implements DerivableKey, SearchableKey, \ArrayAccess, \Counta
     {
         //ASN1::disableCacheInvalidation();
         $decoded = ASN1::decodeBER($encoded);
-        $temp = ASN1::map($decoded, Maps\RecipientEncryptedKey::MAP);
         //ASN1::enableCacheInvalidation();
-        return $temp;
+        return ASN1::map($decoded, Maps\RecipientEncryptedKey::MAP);
     }
 
     public function withKey(#[\SensitiveParameter] EC\PrivateKey $key): self
@@ -228,7 +224,7 @@ class EncryptedKey implements DerivableKey, SearchableKey, \ArrayAccess, \Counta
 
     public function __toString(): string
     {
-        return $this->toString();
+        return (string) $this->toString();
     }
 
     public function __debugInfo(): array

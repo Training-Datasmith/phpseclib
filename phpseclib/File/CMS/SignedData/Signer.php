@@ -30,21 +30,18 @@ use phpseclib4\File\CMS\SignedData;
 use phpseclib4\File\Common\Signable;
 use phpseclib4\File\X509;
 
-class Signer implements \ArrayAccess, \Countable, \Iterator, Signable
+class Signer implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
 {
     use \phpseclib4\File\Common\Traits\ASN1Signature;
     use \phpseclib4\File\Common\Traits\DN;
-    use \phpseclib4\File\Common\Traits\Extension; // pretty much just for extensionMatch()
-
-    public Constructed|array|null $signer;
+    use \phpseclib4\File\Common\Traits\Extension;
     public ?SignedData $cms = null;
-    public Choice|Constructed|null $parent;
+    public Choice|Constructed|null $parent = null;
     public int $depth = 0;
     public int|string $key;
 
-    public function __construct(Constructed|array|null $signer = null)
+    public function __construct(public Constructed|array|null $signer = null)
     {
-        $this->signer = $signer;
     }
 
     public static function load(string|array|Constructed $encoded): self
@@ -58,13 +55,12 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable
     {
         //ASN1::disableCacheInvalidation();
         $rules = [];
-        $rules['signedAttrs']['*'] = [self::class, 'mapInAttrs'];
-        $rules['unsignedAttrs']['*'] = [self::class, 'mapInAttrs'];
-        $rules['sid']['issuerAndSerialNumber']['issuer']['rdnSequence']['*']['*'] = [self::class, 'mapInDNs'];
+        $rules['signedAttrs']['*'] = self::mapInAttrs(...);
+        $rules['unsignedAttrs']['*'] = self::mapInAttrs(...);
+        $rules['sid']['issuerAndSerialNumber']['issuer']['rdnSequence']['*']['*'] = self::mapInDNs(...);
         $decoded = ASN1::decodeBER($encoded);
-        $signer = ASN1::map($decoded, Maps\SignerInfo::MAP, $rules);
         //ASN1::enableCacheInvalidation();
-        return $signer;
+        return ASN1::map($decoded, Maps\SignerInfo::MAP, $rules);
     }
 
     private function mapOutDNs(string $path): void
@@ -78,13 +74,11 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable
 
     public function toString(): string
     {
-        $this->mapOutAttrs('signedAttrs', $this->signer);
-        $this->mapOutAttrs('unsignedAttrs', $this->signer);
+        self::mapOutAttrs('signedAttrs', $this->signer);
+        self::mapOutAttrs('unsignedAttrs', $this->signer);
         $this->mapOutDNs('sid/issuerAndSerialNumber/issuer/rdnSequence');
 
-        $signer = ASN1::encodeDER($this->signer, Maps\SignerInfo::MAP);
-
-        return $signer;
+        return ASN1::encodeDER($this->signer, Maps\SignerInfo::MAP);
     }
 
     public function __toString(): string
@@ -175,7 +169,7 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable
         switch ($attr['type']) {
             case 'id-aa-signingCertificate':
             case 'id-aa-signingCertificateV2':
-                $rules['certs']['*']['issuerSerial']['issuer']['*']['directoryName']['rdnSequence']['*']['*'] = [self::class, 'mapInDNs'];
+                $rules['certs']['*']['issuerSerial']['issuer']['*']['directoryName']['rdnSequence']['*']['*'] = self::mapInDNs(...);
         }
         ASN1::disableCacheInvalidation();
         for ($i = 0; $i < count($attr['value']); $i++) {
@@ -460,9 +454,8 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable
         if (isset($this->signer['signedAttrs'])) {
             $this->compile();
             return chr(ASN1::TYPE_SET | 0x20) . substr((string) $this->signer['signedAttrs'], 1);
-        } else {
-            return (string) $this->cms['content']['encapContentInfo']['eContent'];
         }
+        return (string) $this->cms['content']['encapContentInfo']['eContent'];
     }
 
     public function setSignature(string $signature): void

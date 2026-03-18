@@ -113,7 +113,7 @@ abstract class OpenSSH extends Progenitor
         $name = $reflect->getShortName();
 
         $oid = Curves::OIDs[$name];
-        $aliases = array_filter(Curves::OIDs, fn ($v) => $v == $oid);
+        $aliases = array_filter(Curves::OIDs, fn (string $v): bool => $v == $oid);
         $aliases = array_keys($aliases);
 
         for ($i = 0; $i < count($aliases); $i++) {
@@ -146,9 +146,7 @@ abstract class OpenSSH extends Progenitor
             if ($options['binary'] ?? self::$binary) {
                 return $key;
             }
-
-            $key = 'ssh-ed25519 ' . base64_encode($key) . ' ' . $comment;
-            return $key;
+            return 'ssh-ed25519 ' . base64_encode($key) . ' ' . $comment;
         }
 
         $alias = self::getAlias($curve);
@@ -160,9 +158,7 @@ abstract class OpenSSH extends Progenitor
             return $key;
         }
 
-        $key = 'ecdsa-sha2-' . $alias . ' ' . base64_encode($key) . ' ' . $comment;
-
-        return $key;
+        return 'ecdsa-sha2-' . $alias . ' ' . base64_encode($key) . ' ' . $comment;
     }
 
     /**

@@ -42,7 +42,7 @@ use phpseclib4\File\X509;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable
+class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
 {
     use \phpseclib4\File\Common\Traits\ASN1Signature;
     use \phpseclib4\File\Common\Traits\Extension; // pretty much just for extensionMatch()
@@ -87,7 +87,7 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable
     // need to call CMS\SignedData::load()
     public static function load(string|array|Constructed $encoded): self
     {
-        $r = new \ReflectionClass(__CLASS__);
+        $r = new \ReflectionClass(self::class);
         $cms = $r->newInstanceWithoutConstructor();
         $cms->cms = is_string($encoded) ? self::loadString($encoded) : $encoded;
         foreach ($cms['content']['signerInfos'] as $i => $signerInfo) {
@@ -290,16 +290,16 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable
         $this->cms['content']['version'] = "v$final";
     }
 
-    public function calculateFileHash(string $hash)
+    public function calculateFileHash(string $hash): string
     {
         $hash = new Hash($hash);
         if (isset($this->cms['content']['encapContentInfo']['eContent'])) {
             return $hash->hash((string) $this->cms['content']['encapContentInfo']['eContent']);
-        } elseif (isset($this->fp)) {
-            return $hash->hash($this->fp);
-        } else {
-            throw new RuntimeException('There is nothing to hash');
         }
+        if (isset($this->fp)) {
+            return $hash->hash($this->fp);
+        }
+        throw new RuntimeException('There is nothing to hash');
     }
 
     private function createSignedAttrSkeleton(X509 $x509, int $type): array
@@ -404,7 +404,7 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable
                 ]]
             ]]
         ];
-        return $this->createSigner($skeleton, $x509);
+        return $this->createSigner($skeleton);
     }
 
     public function addNakedSigner(X509 $x509, int $type = CMS::ISSUER_AND_DN): Signer
@@ -424,7 +424,7 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable
         return $this->createSigner($skeleton);
     }
 
-    public function addSignature(Signer $signer)
+    public function addSignature(Signer $signer): void
     {
         $this->compile();
         $this->addCertificate(($signer->getCertificate()));
@@ -437,16 +437,6 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable
     public function __toString(): string
     {
         return $this->toString();
-    }
-
-    private function mapOutDNs(string $path): void
-    {
-        $dns = &Arrays::subArray($this->cms, $path);
-        if (!$dns) {
-            return;
-        }
-
-        self::mapOutDNsInner($dns);
     }
 
     public function &offsetGet(mixed $offset): mixed
@@ -552,7 +542,7 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable
         }
     }
 
-    public function detach()
+    public function detach(): void
     {
         $this->fp = null;
         unset($this->cms['content']['encapContentInfo']['eContent']);

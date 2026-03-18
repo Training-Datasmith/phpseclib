@@ -262,7 +262,7 @@ class Salsa20 extends StreamCipher
                 throw new InsufficientSetupException('Authentication Tag has not been set');
             }
             $newtag = $this->poly1305($ciphertext);
-            if ($this->oldtag != substr($newtag, 0, strlen($this->oldtag))) {
+            if (!str_starts_with($newtag, $this->oldtag)) {
                 $this->oldtag = false;
                 throw new BadDecryptionException('Derived authentication tag and supplied authentication tag do not match');
             }
@@ -325,7 +325,7 @@ class Salsa20 extends StreamCipher
         } else {
             $buffer = &$this->debuffer;
         }
-        if (!strlen($buffer['ciphertext'])) {
+        if (!strlen((string) $buffer['ciphertext'])) {
             $ciphertext = '';
         } else {
             $ciphertext = $text ^ Strings::shift($buffer['ciphertext'], strlen($text));
@@ -362,8 +362,8 @@ class Salsa20 extends StreamCipher
                 $temp = static::salsa20($this->p1 . pack('V', $buffer['counter']++) . $this->p2);
             }
             $ciphertext .= $encrypted . ($text2 ^ $temp);
-            $buffer['ciphertext'] = substr($temp, $overflow);
-        } elseif (!strlen($buffer['ciphertext'])) {
+            $buffer['ciphertext'] = substr((string) $temp, $overflow);
+        } elseif (!strlen((string) $buffer['ciphertext'])) {
             if ($this->engine == self::ENGINE_OPENSSL) {
                 $iv = pack('V', $buffer['counter']) . $this->p2;
                 $buffer['counter'] += (strlen($text) >> 6);
@@ -453,7 +453,7 @@ class Salsa20 extends StreamCipher
     /**
      * The Salsa20 hash function function
      */
-    protected static function salsa20(string $x)
+    protected static function salsa20(string $x): string
     {
         $z = $x = unpack('V*', $x);
         for ($i = 0; $i < 10; $i++) {
@@ -477,29 +477,28 @@ class Salsa20 extends StreamCipher
     {
         if (!$this->usingGeneratedPoly1305Key) {
             return parent::poly1305($this->aad . $text);
-        } else {
-            /*
-            sodium_crypto_aead_chacha20poly1305_encrypt does not calculate the poly1305 tag
-            the same way sodium_crypto_aead_chacha20poly1305_ietf_encrypt does. you can see
-            how the latter encrypts it in Salsa20::encrypt(). here's how the former encrypts
-            it:
-
-            $this->newtag = $this->poly1305(
-                $this->aad .
-                pack('V', strlen($this->aad)) . "\0\0\0\0" .
-                $ciphertext .
-                pack('V', strlen($ciphertext)) . "\0\0\0\0"
-            );
-
-            phpseclib opts to use the IETF construction, even when the nonce is 64-bits
-            instead of 96-bits
-            */
-            return parent::poly1305(
-                self::nullPad128($this->aad) .
-                self::nullPad128($text) .
-                pack('V', strlen($this->aad)) . "\0\0\0\0" .
-                pack('V', strlen($text)) . "\0\0\0\0"
-            );
         }
+        /*
+        sodium_crypto_aead_chacha20poly1305_encrypt does not calculate the poly1305 tag
+        the same way sodium_crypto_aead_chacha20poly1305_ietf_encrypt does. you can see
+        how the latter encrypts it in Salsa20::encrypt(). here's how the former encrypts
+        it:
+        
+        $this->newtag = $this->poly1305(
+            $this->aad .
+            pack('V', strlen($this->aad)) . "\0\0\0\0" .
+            $ciphertext .
+            pack('V', strlen($ciphertext)) . "\0\0\0\0"
+        );
+        
+        phpseclib opts to use the IETF construction, even when the nonce is 64-bits
+        instead of 96-bits
+        */
+        return parent::poly1305(
+            self::nullPad128($this->aad) .
+            self::nullPad128($text) .
+            pack('V', strlen($this->aad)) . "\0\0\0\0" .
+            pack('V', strlen($text)) . "\0\0\0\0"
+        );
     }
 }

@@ -226,9 +226,8 @@ abstract class Strings
         for ($i = 1; $i < count($parts); $i += 2) {
             $format .= substr($parts[$i - 1], 0, -1) . str_repeat($parts[$i - 1][-1], (int) $parts[$i]);
         }
-        $format .= $parts[$i - 1];
 
-        return $format;
+        return $format . $parts[$i - 1];
     }
 
     /**
@@ -349,7 +348,7 @@ abstract class Strings
         if (function_exists('sodium_increment')) {
             $var = strrev($var);
             sodium_increment($var);
-            $var = strrev($var);
+            $var = strrev((string) $var);
             return $var;
         }
 

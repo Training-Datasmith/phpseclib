@@ -41,7 +41,7 @@ use phpseclib4\Math\BigInteger;
  *
  * @author  Jim Wigginton <terrafrost@php.net>
  */
-class CRL implements \ArrayAccess, \Countable, \Iterator, Signable
+class CRL implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
 {
     use \phpseclib4\File\Common\Traits\Extension;
     use \phpseclib4\File\Common\Traits\DN;
@@ -95,9 +95,9 @@ class CRL implements \ArrayAccess, \Countable, \Iterator, Signable
         $decoded = ASN1::decodeBER($crl);
 
         $rules = [];
-        $rules['tbsCertList']['issuer']['rdnSequence']['*']['*'] = [self::class, 'mapInDNs'];
-        $rules['tbsCertList']['crlExtensions']['*'] = [self::class, 'mapInExtensions'];
-        $rules['tbsCertList']['revokedCertificates']['*']['crlEntryExtensions']['*'] = [self::class, 'mapInExtensions'];
+        $rules['tbsCertList']['issuer']['rdnSequence']['*']['*'] = self::mapInDNs(...);
+        $rules['tbsCertList']['crlExtensions']['*'] = self::mapInExtensions(...);
+        $rules['tbsCertList']['revokedCertificates']['*']['crlEntryExtensions']['*'] = self::mapInExtensions(...);
 
         return ASN1::map($decoded, Maps\CertificateList::MAP, $rules);
     }
@@ -264,7 +264,7 @@ class CRL implements \ArrayAccess, \Countable, \Iterator, Signable
         if (!isset($validReasons)) {
             $validReasons = [];
             foreach (self::listValidRevocationReasons() as $subreason) {
-                $validReasons[strtolower($subreason)] = $subreason;
+                $validReasons[strtolower((string) $subreason)] = $subreason;
             }
         }
         $temp = [];
@@ -698,7 +698,7 @@ class CRL implements \ArrayAccess, \Countable, \Iterator, Signable
     public function validateSignature(): bool
     {
         $CAs = X509::getCAs();
-        foreach ($CAs as $i=>$ca) {
+        foreach ($CAs as $ca) {
             if ($ca->isIssuerOf($this)) {
                 $signingCert = $ca;
                 break;

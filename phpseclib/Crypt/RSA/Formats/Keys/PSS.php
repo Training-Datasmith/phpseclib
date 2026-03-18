@@ -55,10 +55,8 @@ abstract class PSS extends Progenitor
 
     /**
      * OIDs loaded
-     *
-     * @var bool
      */
-    private static $oidsLoaded = false;
+    private static bool $oidsLoaded = false;
 
     /**
      * Child OIDs loaded
@@ -80,8 +78,6 @@ abstract class PSS extends Progenitor
 
     /**
      * Break a public or private key down into its constituent components
-     *
-     * @param string|array $key
      */
     public static function load(string|array $key, ?string $password = null): array
     {

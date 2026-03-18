@@ -30,10 +30,8 @@ class BinaryField extends FiniteField
 {
     /**
      * Instance Counter
-     *
-     * @var int
      */
-    private static $instanceCounter = 0;
+    private static int $instanceCounter = 0;
 
     /**
      * Keeps track of current instance
@@ -42,8 +40,7 @@ class BinaryField extends FiniteField
      */
     protected $instanceID;
 
-    /** @var BigInteger */
-    private $randomMax;
+    private readonly \phpseclib4\Math\BigInteger $randomMax;
 
     /**
      * Default constructor
@@ -64,7 +61,7 @@ class BinaryField extends FiniteField
         foreach ($indices as $index) {
             $val[$index] = '1';
         }
-        $modulo = static::base2ToBase256(strrev($val));
+        $modulo = static::base2ToBase256(strrev((string) $val));
 
         $mStart = 2 * $m - 2;
         $t = (int) ceil($m / 8);
@@ -77,7 +74,7 @@ class BinaryField extends FiniteField
         $h = $bitLen & 7;
         $h = $h ? 8 - $h : 0;
 
-        $r = rtrim(substr($val, 0, -1), '0');
+        $r = rtrim(substr((string) $val, 0, -1), '0');
         $u = [static::base2ToBase256(strrev($r))];
         for ($i = 1; $i < 8; $i++) {
             $u[] = static::base2ToBase256(strrev(str_repeat('0', $i) . $r));
@@ -85,7 +82,7 @@ class BinaryField extends FiniteField
 
         // implements algorithm 2.40 (in section 2.3.5) in "Guide to Elliptic Curve Cryptography"
         // with W = 8
-        $reduce = function ($c) use ($u, $mStart, $m, $t, $finalMask, $pad, $h) {
+        $reduce = function ($c) use ($u, $mStart, $m, $t, $finalMask, $pad, $h): string {
             $c = str_pad($c, $pad, "\0", STR_PAD_LEFT);
             for ($i = $mStart; $i >= $m;) {
                 $g = $h >> 3;
@@ -172,7 +169,7 @@ class BinaryField extends FiniteField
         }
         $str = str_pad($str, $pad, "\0", STR_PAD_LEFT);
         if (isset($size)) {
-            $str = str_pad($str, $size, "\0", STR_PAD_LEFT);
+            return str_pad($str, $size, "\0", STR_PAD_LEFT);
         }
 
         return $str;

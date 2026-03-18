@@ -229,7 +229,7 @@ class GMP extends Engine
             $r = -1;
         }
         if ($r > 1) {
-            $r = 1;
+            return 1;
         }
         return $r;
     }
@@ -251,7 +251,7 @@ class GMP extends Engine
      *
      * @return false|GMP
      */
-    public function modInverse(GMP $n)
+    public function modInverse(GMP $n): \phpseclib4\Math\BigInteger\Engines\GMP|false
     {
         $temp = new self();
         $temp->value = gmp_invert($this->value, $n->value);
@@ -541,7 +541,7 @@ class GMP extends Engine
     public function createRecurringModuloFunction(): \Closure
     {
         $temp = $this->value;
-        return fn (GMP $x) => new GMP($x->value % $temp);
+        return fn (GMP $x): \phpseclib4\Math\BigInteger\Engines\GMP => new GMP($x->value % $temp);
     }
 
     /**

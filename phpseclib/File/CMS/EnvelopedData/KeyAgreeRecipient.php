@@ -29,11 +29,10 @@ class KeyAgreeRecipient extends Recipient
         //ASN1::disableCacheInvalidation();
         $decoded = ASN1::decodeBER($encoded);
         $rules = [];
-        $rules['keyEncryptionAlgorithm'] = [self::class, 'mapInAlgoParams'];
-        $rules['recipientEncryptedKeys'] = [self::class, 'mapInEncryptedKeys'];
-        $recipient = ASN1::map($decoded, Maps\KeyAgreeRecipientInfo::MAP, $rules);
+        $rules['keyEncryptionAlgorithm'] = self::mapInAlgoParams(...);
+        $rules['recipientEncryptedKeys'] = self::mapInEncryptedKeys(...);
         //ASN1::enableCacheInvalidation();
-        return $recipient;
+        return ASN1::map($decoded, Maps\KeyAgreeRecipientInfo::MAP, $rules);
     }
 
     public static function mapInAlgoParams(Constructed $algorithm): void
@@ -60,9 +59,7 @@ class KeyAgreeRecipient extends Recipient
 
     public function toString(): string
     {
-        $recipient = ASN1::encodeDER($this->recipient, Maps\KeyAgreeRecipientInfo::MAP);
-
-        return $recipient;
+        return ASN1::encodeDER($this->recipient, Maps\KeyAgreeRecipientInfo::MAP);
     }
 
     public function compile(): void

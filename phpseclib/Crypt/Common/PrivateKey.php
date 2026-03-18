@@ -27,8 +27,5 @@ interface PrivateKey
     public function getPublicKey(): PublicKey;
     public function toString(string $type, array $options = []): string;
 
-    /**
-     * @return static
-     */
     public function withPassword(#[SensitiveParameter] ?string $password = null): PrivateKey;
 }
