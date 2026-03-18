@@ -46,7 +46,7 @@ abstract class BaseString implements BaseType, \Stringable
     private function convert(string $class): self
     {
         if (!$this->isConvertable()) {
-            throw new CharacterConversionException('Unable to convert - ' . static::CLASS . ' doesn\'t have a size constant associated with it');
+            throw new CharacterConversionException('Unable to convert - ' . static::class . ' doesn\'t have a size constant associated with it');
         }
         //if (!defined("$class::SIZE")) {
         //    throw new \Exception("Unable to convert - $class doesn't have a size constant associated with it");
@@ -82,11 +82,13 @@ abstract class BaseString implements BaseType, \Stringable
                     $c = ($c << 8) | ord($in[$i++]);
                     $c = ($c << 8) | ord($in[$i++]);
                     // fall-through
+                    // no break
                 case $insize == 2:
                     $c = ($c << 8) | ord($in[$i++]);
                     // fall-through
+                    // no break
                 case $insize == 1:
-                // only single byte UTF-8 characters have the first bit set to 1
+                    // only single byte UTF-8 characters have the first bit set to 1
                 case ($c & 0x80) == 0x00:
                     break;
                 case ($c & 0x40) == 0x00:
@@ -124,10 +126,12 @@ abstract class BaseString implements BaseType, \Stringable
                     $v .= chr($c & 0xFF);
                     $c >>= 8;
                     // fall-through
+                    // no break
                 case $outsize == 2:
                     $v .= chr($c & 0xFF);
                     $c >>= 8;
                     // fall-through
+                    // no break
                 case $outsize == 1:
                     $v .= chr($c & 0xFF);
                     $c >>= 8;
@@ -135,29 +139,34 @@ abstract class BaseString implements BaseType, \Stringable
                         throw new CharacterConversionException('Character requiring ' . floor(log($origC, 2)) . ' bits found but only ' . ($outsize << 3) . ' bits are available per character in new format');
                     }
                     break;
-                // 1 << 31 == 0x8000000. we do the former vs the latter because the latter doesn't work well on 32-bit PHP installs
+                    // 1 << 31 == 0x8000000. we do the former vs the latter because the latter doesn't work well on 32-bit PHP installs
                 case ($c & (1 << 31)) != 0:
                     throw new CharacterConversionException('Character requiring 32 bits found but only 31 bits are available per character in new format');
                 case $c >= 0x04000000:
                     $v .= chr(0x80 | ($c & 0x3F));
                     $c = ($c >> 6) | 0x04000000;
                     // fall-through
+                    // no break
                 case $c >= 0x00200000:
                     $v .= chr(0x80 | ($c & 0x3F));
                     $c = ($c >> 6) | 0x00200000;
                     // fall-through
+                    // no break
                 case $c >= 0x00010000:
                     $v .= chr(0x80 | ($c & 0x3F));
                     $c = ($c >> 6) | 0x00010000;
                     // fall-through
+                    // no break
                 case $c >= 0x00000800:
                     $v .= chr(0x80 | ($c & 0x3F));
                     $c = ($c >> 6) | 0x00000800;
                     // fall-through
+                    // no break
                 case $c >= 0x00000080:
                     $v .= chr(0x80 | ($c & 0x3F));
                     $c = ($c >> 6) | 0x000000C0;
                     // fall-through
+                    // no break
                 default:
                     $v .= chr($c);
             }
@@ -173,36 +182,36 @@ abstract class BaseString implements BaseType, \Stringable
 
     public function toUTF8String(): self
     {
-        return $this->convert(UTF8String::CLASS);
+        return $this->convert(UTF8String::class);
     }
 
     public function toBMPString(): self
     {
-        return $this->convert(BMPString::CLASS);
+        return $this->convert(BMPString::class);
     }
 
     public function toUniversalString(): self
     {
-        return $this->convert(UniversalString::CLASS);
+        return $this->convert(UniversalString::class);
     }
 
     public function toPrintableString(): self
     {
-        return $this->convert(PrintableString::CLASS);
+        return $this->convert(PrintableString::class);
     }
 
     public function toTeletexString(): self
     {
-        return $this->convert(TeletexString::CLASS);
+        return $this->convert(TeletexString::class);
     }
 
     public function toIA5String(): self
     {
-        return $this->convert(IA5String::CLASS);
+        return $this->convert(IA5String::class);
     }
 
     public function toVisibleString(): self
     {
-        return $this->convert(VisibleString::CLASS);
+        return $this->convert(VisibleString::class);
     }
 }

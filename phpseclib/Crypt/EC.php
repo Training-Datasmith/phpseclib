@@ -39,7 +39,6 @@ use phpseclib4\Crypt\EC\BaseCurves\TwistedEdwards as TwistedEdwardsCurve;
 use phpseclib4\Crypt\EC\Curves\Curve25519;
 use phpseclib4\Crypt\EC\Curves\Ed25519;
 use phpseclib4\Crypt\EC\Curves\Ed448;
-use phpseclib4\Crypt\EC\Formats\Keys\PKCS1;
 use phpseclib4\Crypt\EC\Parameters;
 use phpseclib4\Crypt\EC\PrivateKey;
 use phpseclib4\Crypt\EC\PublicKey;

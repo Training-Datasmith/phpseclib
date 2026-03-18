@@ -15,7 +15,6 @@ declare(strict_types=1);
 
 namespace phpseclib4\File\Common\Traits;
 
-use phpseclib4\Common\Functions\Arrays;
 use phpseclib4\Common\Functions\Strings;
 use phpseclib4\Crypt\Hash;
 use phpseclib4\Exception\CharacterConversionException;
@@ -46,37 +45,37 @@ trait DN
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_ARRAY = 0;
+    public const DN_ARRAY = 0;
     /**
      * Return string
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_STRING = 1;
+    public const DN_STRING = 1;
     /**
      * Return ASN.1 name string
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_ASN1 = 2;
+    public const DN_ASN1 = 2;
     /**
      * Return OpenSSL compatible array
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_OPENSSL = 3;
+    public const DN_OPENSSL = 3;
     /**
      * Return canonical ASN.1 RDNs string
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_CANON = 4;
+    public const DN_CANON = 4;
     /**
      * Return name hash for file indexing
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_HASH = 5;
+    public const DN_HASH = 5;
 
     public static function mapInDNs(array|Constructed &$dn): void
     {
@@ -132,7 +131,7 @@ trait DN
             } else {
                 foreach ($value as &$val) {
                     if ($val instanceof BaseType) {
-                        $class = (new \ReflectionClass($val::CLASS))->getShortName();
+                        $class = (new \ReflectionClass($val::class))->getShortName();
                         $key = match ($class) {
                             'TeletexString' => 'teletexString',
                             'PrintableString' => 'printableString',
@@ -214,7 +213,7 @@ trait DN
         if ($propName == 'id-at-postalAddress' && is_string($value) && preg_match('/^#(?:[0-9A-Fa-f][0-9A-Fa-f])+$/', $value)) {
             $temp = [
                 'type' => $propName,
-                'value' => new Element(pack('H*', substr($value, 1)))
+                'value' => new Element(pack('H*', substr($value, 1))),
             ];
             self::mapInDNs($temp);
             $dn['rdnSequence'][] = [$temp];
@@ -224,8 +223,8 @@ trait DN
         $dn['rdnSequence'][] = [
             [
                 'type' => $propName,
-                'value' => $value
-            ]
+                'value' => $value,
+            ],
         ];
     }
 
@@ -307,7 +306,7 @@ trait DN
                 $propValue = preg_replace_callback('#\\\x([0-9A-Fa-f]{2})#', $callback, $propValue);
                 $temp = [
                     'type' => self::translateDNProp($propName),
-                    'value' => new Element($propValue)
+                    'value' => new Element($propValue),
                 ];
                 self::mapInDNs($temp);
                 if (!$temp['value'] instanceof Element) {
@@ -342,7 +341,7 @@ trait DN
             if (preg_match('/^#(?:[0-9A-Fa-f][0-9A-Fa-f])+$/', $propValue)) {
                 $temp = [
                     'type' => self::translateDNProp($propName),
-                    'value' => new Element(pack('H*', substr($propValue, 1)))
+                    'value' => new Element(pack('H*', substr($propValue, 1))),
                 ];
                 self::mapInDNs($temp);
                 self::addDNPropsInternal($dn, $propName, $temp['value']);
@@ -389,10 +388,11 @@ trait DN
                             try {
                                 $attr['value'] = $attr['value']->toUTF8String();
                                 $attr['value']->value = strtolower((string) preg_replace('/\s+/', ' ', $attr['value']->value));
-                            } catch (CharacterConversionException) {}
+                            } catch (CharacterConversionException) {
+                            }
                         } elseif (is_array($attr['value']) || $attr['value'] instanceof Constructed) {
                             if ($attr['type'] == 'id-at-postalAddress') {
-                                foreach ($attr['value'] as $key=>$val) {
+                                foreach ($attr['value'] as $key => $val) {
                                     $val = &$attr['value'][$key];
                                     if ($val instanceof Choice && !isset($val['utf8String']) && $val->value instanceof BaseString && $val->value->isConvertable()) {
                                         $val['utf8String'] = $val->value->toUTF8String();
@@ -462,7 +462,8 @@ trait DN
             if ($value instanceof BaseString && $value->isConvertable()) {
                 try {
                     $value = (string) $value->toUTF8String();
-                } catch (CharacterConversionException) {}
+                } catch (CharacterConversionException) {
+                }
             }
 
             $result[$desc] = isset($result[$desc]) ?

@@ -163,7 +163,8 @@ class TripleDES extends DES
             case 'cbc3':
                 $mode = 'cbc';
                 // fall-through
-            // If not 3CBC, we init as usual
+                // If not 3CBC, we init as usual
+                // no break
             default:
                 parent::__construct($mode);
 
@@ -426,7 +427,7 @@ class TripleDES extends DES
                 $this->des_rounds = 1;
                 break;
 
-            // otherwise, if $key > 64bits, we configure our engine to work as 3DES.
+                // otherwise, if $key > 64bits, we configure our engine to work as 3DES.
             default:
                 $this->des_rounds = 3;
 

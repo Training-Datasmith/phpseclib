@@ -10,8 +10,8 @@ declare(strict_types=1);
 
 namespace phpseclib4\Tests\Unit\File\CMS;
 
-use phpseclib4\File\CMS;
 use phpseclib4\File\ASN1\Types\OID;
+use phpseclib4\File\CMS;
 use phpseclib4\Tests\PhpseclibTestCase;
 
 class EncryptedDataTest extends PhpseclibTestCase

@@ -38,8 +38,8 @@ abstract class CMSEncryptedData
             'unprotectedAttrs' => [
                 'constant' => 1,
                 'optional' => true,
-                'implicit' => true
+                'implicit' => true,
             ] + UnprotectedAttributes::MAP,
-        ]
+        ],
     ];
 }

@@ -114,7 +114,7 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
         $rules = [];
         $rules['certificationRequestInfo']['attributes']['*'] = self::mapInAttributes(...);
         $rules['certificationRequestInfo']['subject']['rdnSequence']['*']['*'] = self::mapInDNs(...);
-        $rules['certificationRequestInfo']['subjectPKInfo'] = function(Constructed &$csr): void {
+        $rules['certificationRequestInfo']['subjectPKInfo'] = function (Constructed &$csr): void {
             try {
                 $csr = PublicKeyLoader::load($csr->getEncoded());
             } catch (NoKeyLoadedException) {
@@ -169,7 +169,7 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
 
             if ($id == 'pkcs-9-at-extensionRequest') {
                 $oldValue = $value instanceof Constructed ? $value->toArray() : $value;
-                foreach ($value as $i=>$subvalue) {
+                foreach ($value as $i => $subvalue) {
                     self::mapOutExtensionsHelper($value[$i]);
                 }
             }
@@ -186,7 +186,7 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
                 unset($attributes[$i]);
                 continue;
             }
-            foreach ($value as $i=>$subvalue) {
+            foreach ($value as $i => $subvalue) {
                 if ($value[$i] instanceof BaseType) {
                     ASN1::encodeDER($value[$i], $map);
                     $value[$i]->enableForcedCache();
@@ -258,7 +258,7 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
         if ($id == 'pkcs-9-at-extensionRequest') {
             $rule['*'] = self::mapInExtensions(...);
         }
-        foreach ($attr['value'] as $key=>$value) {
+        foreach ($attr['value'] as $key => $value) {
             $value = &$attr['value'][$key];
             $decoded = ASN1::decodeBER($value instanceof Element ? $value->value : $value->getEncodedWithWrapping());
             $value = ASN1::map($decoded, $map, $rule);
@@ -557,7 +557,7 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
                             return [
                                 'extnId' => $name,
                                 'extnValue' => $ext['extnValue'],
-                                'critical' => is_bool($ext['critical']) ? $ext['critical'] : $ext['critical']->value
+                                'critical' => is_bool($ext['critical']) ? $ext['critical'] : $ext['critical']->value,
                             ];
                         }
                     }
@@ -663,7 +663,7 @@ class CSR implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
                 'extnId' => $name,
                 'critical' => $critical,
                 'extnValue' => $value,
-            ]]]
+            ]]],
         ];
         if (!isset($this->csr['certificationRequestInfo']['attributes'])) {
             $this->csr['certificationRequestInfo']['attributes'] = [$extensionRequestTemplate];

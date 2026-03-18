@@ -35,7 +35,6 @@ use phpseclib4\Crypt\PublicKeyLoader;
 use phpseclib4\Crypt\Random;
 use phpseclib4\Crypt\RSA;
 use phpseclib4\Exception\BadMethodCallException;
-use phpseclib4\Exception\CharacterConversionException;
 use phpseclib4\Exception\InvalidArgumentException;
 use phpseclib4\Exception\MethodOnlyAvailableForSelfSigned;
 use phpseclib4\Exception\NoKeyLoadedException;
@@ -49,11 +48,9 @@ use phpseclib4\File\ASN1\Types\BaseType;
 use phpseclib4\File\ASN1\Types\BitString;
 use phpseclib4\File\ASN1\Types\Boolean;
 use phpseclib4\File\ASN1\Types\Choice;
-use phpseclib4\File\ASN1\Types\ExplicitNull;
 use phpseclib4\File\ASN1\Types\GeneralizedTime;
 use phpseclib4\File\ASN1\Types\OctetString;
 use phpseclib4\File\ASN1\Types\OID;
-use phpseclib4\File\ASN1\Types\UTCTime;
 use phpseclib4\File\ASN1\Types\UTF8String;
 use phpseclib4\File\Common\Signable;
 use phpseclib4\Math\BigInteger;
@@ -110,7 +107,7 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
             // of time, however, phpseclib, making no assumptions on the underlying filesystem, doesn't
             // really have a mechanism to do this. if you want to save CRLs to some sort of DB then you can
             // replace this function with one that'll cache to the DB and pull from the DB when appropriate
-            self::$inCRLFunction = (fn(string $url, BigInteger $serial) => false);
+            self::$inCRLFunction = (fn (string $url, BigInteger $serial) => false);
         }
 
         ASN1::loadOIDs('X509');
@@ -278,7 +275,7 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
         $rules['tbsCertificate']['extensions']['*'] = self::mapInExtensions(...);
         $rules['tbsCertificate']['subject']['rdnSequence']['*']['*'] = self::mapInDNs(...);
         $rules['tbsCertificate']['issuer']['rdnSequence']['*']['*'] = self::mapInDNs(...);
-        $rules['tbsCertificate']['subjectPublicKeyInfo'] = function(Constructed &$key): void {
+        $rules['tbsCertificate']['subjectPublicKeyInfo'] = function (Constructed &$key): void {
             try {
                 $key = PublicKeyLoader::load($key->getEncoded());
                 if ($key instanceof RSA && $key->getLoadedFormat() == 'PKCS8') {
@@ -727,7 +724,7 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
                 return [
                     'extnId' => $name,
                     'extnValue' => $ext['extnValue'],
-                    'critical' => is_bool($ext['critical']) ? $ext['critical'] : $ext['critical']->value
+                    'critical' => is_bool($ext['critical']) ? $ext['critical'] : $ext['critical']->value,
                 ];
             }
         }
@@ -1229,8 +1226,8 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
                 switch (true) {
                     case !isset($authorityKey) || !isset($subjectKeyID):
                     case isset($authorityKey['extnValue']['keyIdentifier']) && $authorityKey['extnValue']['keyIdentifier']->value === $subjectKeyID['extnValue']->value:
-                    //case !isset($authorityKey) && !isset($subjectKeyID):
-                    //case isset($subjectKeyID) && isset($authorityKey) && isset($authorityKey['extnValue']['keyIdentifier']) && $authorityKey['extnValue']['keyIdentifier']->value === $subjectKeyID['extnValue']->value:
+                        //case !isset($authorityKey) && !isset($subjectKeyID):
+                        //case isset($subjectKeyID) && isset($authorityKey) && isset($authorityKey['extnValue']['keyIdentifier']) && $authorityKey['extnValue']['keyIdentifier']->value === $subjectKeyID['extnValue']->value:
                         if (isset($authorityKey) && isset($authorityKey['extnValue']['authorityCertSerialNumber']) && !$authorityKey['extnValue']['authorityCertSerialNumber']->equals($this['tbsCertificate']['serialNumber'])) {
                             return false;
                         }
@@ -1461,9 +1458,9 @@ class X509 implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
                 }
 
                 break;
-            //case 'ftp':
-            //case 'ldap':
-            //default:
+                //case 'ftp':
+                //case 'ldap':
+                //default:
         }
 
         return $data;

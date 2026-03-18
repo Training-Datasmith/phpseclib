@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pure-PHP CMS / CompressedData Parser
  *
@@ -18,13 +19,10 @@ namespace phpseclib4\File\CMS;
 
 use phpseclib4\Common\Functions\Strings;
 use phpseclib4\Exception\InsufficientSetupException;
-use phpseclib4\Exception\UnsupportedAlgorithmException;
 use phpseclib4\File\ASN1;
 use phpseclib4\File\ASN1\Constructed;
 use phpseclib4\File\ASN1\Element;
 use phpseclib4\File\ASN1\Maps;
-use phpseclib4\File\ASN1\Types\OctetString;
-use phpseclib4\File\ASN1\Types\OID;
 use phpseclib4\File\CMS;
 
 /**
@@ -53,7 +51,7 @@ class CompressedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
                     'eContentType' => 'id-data',
                     'eContent' => zlib_encode((string) $this->decompressed, ZLIB_ENCODING_DEFLATE),
                 ],
-            ]
+            ],
         ];
     }
 

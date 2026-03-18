@@ -167,7 +167,7 @@ abstract class PKCS1 extends PKCS
         $iv = strtoupper(Strings::bin2hex($iv));
         return "-----BEGIN $type PRIVATE KEY-----\r\n" .
                "Proc-Type: 4,ENCRYPTED\r\n" .
-               "DEK-Info: " . $encryptionAlgorithm . ",$iv\r\n" .
+               'DEK-Info: ' . $encryptionAlgorithm . ",$iv\r\n" .
                "\r\n" .
                chunk_split(Strings::base64_encode($cipher->encrypt($key)), 64) .
                "-----END $type PRIVATE KEY-----";

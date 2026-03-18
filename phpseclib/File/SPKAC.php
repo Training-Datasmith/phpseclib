@@ -137,7 +137,7 @@ class SPKAC implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringabl
         $decoded = ASN1::decodeBER($spkac);
 
         $rules = [];
-        $rules['publicKeyAndChallenge']['spki'] = function(Constructed &$spkac): void {
+        $rules['publicKeyAndChallenge']['spki'] = function (Constructed &$spkac): void {
             try {
                 $spkac = PublicKeyLoader::load($spkac->getEncoded());
             } catch (NoKeyLoadedException) {

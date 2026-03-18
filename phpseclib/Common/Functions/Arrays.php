@@ -129,7 +129,7 @@ abstract class Arrays
         }
 
         $parts = explode('/', $path);
-        foreach ($parts as $k=>$i) {
+        foreach ($parts as $k => $i) {
             if (!isset($root)) {
                 $loc = implode('/', array_slice($parts, 0, $k));
                 throw new RuntimeException("Unable to find node for $loc");
@@ -142,7 +142,7 @@ abstract class Arrays
 
             if ($i == '*') {
                 $path = implode('/', array_slice($parts, $k + 1));
-                foreach ($root as $key=>$val) {
+                foreach ($root as $key => $val) {
                     if (empty($path)) {
                         return $val;
                     }
@@ -171,14 +171,14 @@ abstract class Arrays
     public static function subArrayMapWithWildcards(array|\ArrayAccess|null &$root, string $path, \Closure $func): void
     {
         $parts = explode('/', $path);
-        foreach ($parts as $k=>$i) {
+        foreach ($parts as $k => $i) {
             if (!isset($root)) {
                 return;
             }
 
             if ($i == '*') {
                 $path = implode('/', array_slice($parts, $k + 1));
-                foreach ($root as $key=>$val) {
+                foreach ($root as $key => $val) {
                     if (empty($path)) {
                         $root[$key] = $func($val);
                     } else {

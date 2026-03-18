@@ -100,8 +100,7 @@ class Identity implements PrivateKey
          * @see self::sign()
          */
         private $fsock
-    )
-    {
+    ) {
     }
 
     /**

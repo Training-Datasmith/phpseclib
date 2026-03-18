@@ -273,7 +273,7 @@ abstract class PuTTY
         $source = Strings::packSSH2('ssss', $type, $encryption, $comment, $public);
 
         $public = Strings::base64_encode($public);
-        $key .= "Public-Lines: " . ((strlen($public) + 63) >> 6) . "\r\n";
+        $key .= 'Public-Lines: ' . ((strlen($public) + 63) >> 6) . "\r\n";
         $key .= chunk_split($public, 64);
 
         if (empty($password) && !is_string($password)) {
@@ -299,7 +299,7 @@ abstract class PuTTY
                     $key .= "Argon2-Memory: 8192\r\n";
                     $key .= "Argon2-Passes: 13\r\n";
                     $key .= "Argon2-Parallelism: 1\r\n";
-                    $key .= "Argon2-Salt: " . Strings::bin2hex($salt) . "\r\n";
+                    $key .= 'Argon2-Salt: ' . Strings::bin2hex($salt) . "\r\n";
                     [
                         'symkey' => $symkey,
                         'symiv' => $symiv,

@@ -369,7 +369,7 @@ class SFTP extends SSH2
             // from PuTTY's psftp.exe
             $command = "test -x /usr/lib/sftp-server && exec /usr/lib/sftp-server\n" .
                        "test -x /usr/local/lib/sftp-server && exec /usr/local/lib/sftp-server\n" .
-                       "exec sftp-server";
+                       'exec sftp-server';
             // we don't do $this->exec($command, false) because exec() operates on a different channel and plus the SSH_MSG_CHANNEL_OPEN that exec() does
             // is redundant
             $packet = Strings::packSSH2(
@@ -691,6 +691,7 @@ class SFTP extends SSH2
                 case '..':
                     array_pop($new);
                     // fall-through
+                    // no break
                 case '.':
                     break;
                 default:
@@ -715,7 +716,7 @@ class SFTP extends SSH2
         // assume current dir if $dir is empty
         if ($dir === '') {
             $dir = './';
-        // suffix a slash if needed
+            // suffix a slash if needed
         } elseif ($dir[-1] != '/') {
             $dir .= '/';
         }
@@ -1024,6 +1025,7 @@ class SFTP extends SSH2
                     $a[$sort] &= 0o7777;
                     $b[$sort] &= 0o7777;
                     // fall-through
+                    // no break
                 default:
                     if ($a[$sort] === $b[$sort]) {
                         break;
@@ -1916,7 +1918,7 @@ class SFTP extends SSH2
         switch (true) {
             case $mode & self::SOURCE_CALLBACK:
                 if (!is_callable($data)) {
-                    throw new BadFunctionCallException("\$data should be is_callable() if you specify SOURCE_CALLBACK flag");
+                    throw new BadFunctionCallException('$data should be is_callable() if you specify SOURCE_CALLBACK flag');
                 }
                 $dataCallback = $data;
                 // do nothing
@@ -3235,7 +3237,7 @@ class SFTP extends SSH2
         if (!isset($this->extensions['copy-data']) || $this->extensions['copy-data'] !== '1') {
             throw new \RuntimeException(
                 "Extension 'copy-data' is not supported by the server. " .
-                "Call getSupportedVersions() to see a list of supported extension"
+                'Call getSupportedVersions() to see a list of supported extension'
             );
         }
 
@@ -3329,7 +3331,7 @@ class SFTP extends SSH2
         } else {
             throw new RuntimeException(
                 "Extension 'posix-rename@openssh.com' is not supported by the server. " .
-                "Call getSupportedVersions() to see a list of supported extension"
+                'Call getSupportedVersions() to see a list of supported extension'
             );
         }
 
@@ -3374,7 +3376,7 @@ class SFTP extends SSH2
         if (!isset($this->extensions['statvfs@openssh.com']) || $this->extensions['statvfs@openssh.com'] !== '2') {
             throw new RuntimeException(
                 "Extension 'statvfs@openssh.com' is not supported by the server. " .
-                "Call getSupportedVersions() to see a list of supported extension"
+                'Call getSupportedVersions() to see a list of supported extension'
             );
         }
 

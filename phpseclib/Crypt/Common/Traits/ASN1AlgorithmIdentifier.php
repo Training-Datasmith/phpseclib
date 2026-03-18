@@ -277,7 +277,7 @@ trait ASN1AlgorithmIdentifier
                         case 58:
                             $effectiveKeyLength = 128;
                             break;
-                        //default: // should be >= 256
+                            //default: // should be >= 256
                     }
                     $cipher->setIV((string) $iv);
                     $cipher->setKeyLength($effectiveKeyLength);
@@ -292,7 +292,7 @@ trait ASN1AlgorithmIdentifier
                 //$value = ASN1::map($temp[0], Maps\PBMAC1params::MAP)->toArray();
                 // since i can't find any implementation that does PBMAC1 it is unsupported
                 throw new UnsupportedAlgorithmException('Only PBES1 and PBES2 PKCS#8 keys are supported.');
-            // at this point we'll assume that the key conforms to PublicKeyInfo
+                // at this point we'll assume that the key conforms to PublicKeyInfo
         }
     }
 

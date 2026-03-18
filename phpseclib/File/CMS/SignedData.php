@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pure-PHP CMS / SignedData Parser
  *
@@ -16,7 +17,6 @@ declare(strict_types=1);
 
 namespace phpseclib4\File\CMS;
 
-use phpseclib4\Common\Functions\Arrays;
 use phpseclib4\Common\Functions\Strings;
 use phpseclib4\Crypt\Common\PrivateKey;
 use phpseclib4\Crypt\Hash;
@@ -27,8 +27,6 @@ use phpseclib4\File\ASN1;
 use phpseclib4\File\ASN1\Constructed;
 use phpseclib4\File\ASN1\Element;
 use phpseclib4\File\ASN1\Maps;
-use phpseclib4\File\ASN1\Types\BaseType;
-use phpseclib4\File\ASN1\Types\BitString;
 use phpseclib4\File\ASN1\Types\OctetString;
 use phpseclib4\File\ASN1\Types\OID;
 use phpseclib4\File\CMS;
@@ -72,8 +70,8 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable, \Stri
                 ],
                 //'certificates' => [],
                 //'crls' => [],
-                'signerInfos' => []
-            ]
+                'signerInfos' => [],
+            ],
         ];
         if (is_string($data)) {
             $this->cms['content']['encapContentInfo']['eContent'] = $data;
@@ -400,9 +398,9 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable, \Stri
                     'issuerSerial' => [
                         'issuer' => [['directoryName' => $x509['tbsCertificate']['issuer']]],
                         'serialNumber' => $x509['tbsCertificate']['serialNumber'],
-                    ]
-                ]]
-            ]]
+                    ],
+                ]],
+            ]],
         ];
         return $this->createSigner($skeleton);
     }
@@ -556,22 +554,22 @@ class SignedData implements \ArrayAccess, \Countable, \Iterator, Signable, \Stri
                 // standard X509 cert
                 case isset($cert['certificate']): // && $cert['certificate'] instanceof X509:
                     $certs[] = $cert['certificate'];
-                //    break;
-                // extended certificates are basically wrappers around regular X509 certs with unsigned attributes
-                // living alongside the cert. this was intended for pre-v3 X509 certs where extensions were not
-                // included
-                //case isset($cert['extendedCertificate']): // obsolete
+                    //    break;
+                    // extended certificates are basically wrappers around regular X509 certs with unsigned attributes
+                    // living alongside the cert. this was intended for pre-v3 X509 certs where extensions were not
+                    // included
+                    //case isset($cert['extendedCertificate']): // obsolete
                     //if ($this->isSignedBy($cert['extendedCertificate']['certificate'])) {
                     //    $signingCert = $cert['extendedCertificiate']['certificate'];
                     //}
                     //break;
-                //case isset($cert['v1AttrCert']): // obsolete
+                    //case isset($cert['v1AttrCert']): // obsolete
                     // ['v1AttrCert']['acInfo'] = $AttributeCertificateInfoV1 ?
-                //case isset($cert['v2AttrCert']):
+                    //case isset($cert['v2AttrCert']):
                     // ['v2AttrCert']['acInfo'] = $AttributeCertificateInfo ?
-                //case isset($cert['other']):
+                    //case isset($cert['other']):
                     // ['other']['otherCert'] = ???
-                //    continue 2;
+                    //    continue 2;
             }
         }
         return $certs;

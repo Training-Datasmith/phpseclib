@@ -261,6 +261,7 @@ abstract class DH extends AsymmetricKey
                 case is_string($public):
                     $public = new BigInteger($public, -256);
                     // fall-through
+                    // no break
                 case $public instanceof BigInteger:
                     return $public->powMod($private->privateKey, $private->prime)->toBytes(true);
                 default:
@@ -273,6 +274,7 @@ abstract class DH extends AsymmetricKey
                 case $public instanceof EC\PublicKey:
                     $public = $public->getEncodedCoordinates();
                     // fall-through
+                    // no break
                 case is_string($public):
                     $point = $private->multiply($public);
                     /*

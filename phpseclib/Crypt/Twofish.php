@@ -553,7 +553,7 @@ class Twofish extends BlockCipher
         $S3 = $this->S3;
         $K  = $this->K;
 
-        $in = unpack("V4", $in);
+        $in = unpack('V4', $in);
         $R0 = $K[0] ^ $in[1];
         $R1 = $K[1] ^ $in[2];
         $R2 = $K[2] ^ $in[3];
@@ -588,7 +588,7 @@ class Twofish extends BlockCipher
 
         // @codingStandardsIgnoreStart
         return pack(
-            "V4",
+            'V4',
             $K[4] ^ $R2,
             $K[5] ^ $R3,
             $K[6] ^ $R0,
@@ -608,7 +608,7 @@ class Twofish extends BlockCipher
         $S3 = $this->S3;
         $K  = $this->K;
 
-        $in = unpack("V4", $in);
+        $in = unpack('V4', $in);
         $R0 = $K[4] ^ $in[1];
         $R1 = $K[5] ^ $in[2];
         $R2 = $K[6] ^ $in[3];
@@ -643,7 +643,7 @@ class Twofish extends BlockCipher
 
         // @codingStandardsIgnoreStart
         return pack(
-            "V4",
+            'V4',
             $K[0] ^ $R2,
             $K[1] ^ $R3,
             $K[2] ^ $R0,

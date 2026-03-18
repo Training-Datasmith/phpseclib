@@ -50,7 +50,7 @@ class LoadKeyTest extends PhpseclibTestCase
             ["'; DROP TABLE users; --"],
             ["<script>alert('XSS');</script>"],
             ['こんにちは世界'],
-            ["Hello 👋 World 🌍"],
+            ['Hello 👋 World 🌍'],
             ["Line 1\nLine 2"],
             ["Column1\tColumn2"],
             ['MiXeD cAsE'],
@@ -59,7 +59,7 @@ class LoadKeyTest extends PhpseclibTestCase
             ['{"key": "value"}'],
             ['SGVsbG8sIFdvcmxkIQ=='],
             ["Hello\x00World"],
-            [mb_convert_encoding("Hello, World!", "UTF-16")]
+            [mb_convert_encoding('Hello, World!', 'UTF-16')],
         ];
     }
 
@@ -283,7 +283,6 @@ ZQIDAQAB
         $rsa = PublicKeyLoader::load($key);
         $this->assertInstanceOf(PublicKey::class, $rsa);
     }
-
 
     public function testPubKeyPssWithoutParams(): void
     {

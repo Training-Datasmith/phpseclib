@@ -36,7 +36,6 @@ use phpseclib4\Exception\UnexpectedValueException;
 use phpseclib4\Exception\UnsupportedCurveException;
 use phpseclib4\File\ASN1;
 use phpseclib4\File\ASN1\Maps;
-use phpseclib4\File\ASN1\Types\ExplicitNull;
 use phpseclib4\Math\BigInteger;
 use phpseclib4\Math\Common\FiniteField\Integer;
 

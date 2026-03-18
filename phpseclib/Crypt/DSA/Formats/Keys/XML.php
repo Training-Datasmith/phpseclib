@@ -81,6 +81,7 @@ abstract class XML
                 case 'y': // G**X mod P (where X is part of the private key and not made public)
                     $components['y'] = $value;
                     // the remaining options do not do anything
+                    // no break
                 case 'j': // (P - 1) / Q
                     // Parameter J is available for inclusion solely for efficiency as it is calculatable from
                     // P and Q

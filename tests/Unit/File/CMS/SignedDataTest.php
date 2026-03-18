@@ -198,7 +198,7 @@ ybcPA9iklr0wAwYBAAMBAA==
         $expected = 'blah blah';
         $signer['signedAttrs'][] = [
             'type' => '2.9999',
-            'value' => [$expected]
+            'value' => [$expected],
         ];
 
         $actual = (string) $cms['content']['signerInfos'][0]['signedAttrs'][0]['value'][0];

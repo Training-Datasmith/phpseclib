@@ -23,16 +23,13 @@ namespace phpseclib4\File;
 use phpseclib4\Common\Functions\Arrays;
 use phpseclib4\Common\Functions\Strings;
 use phpseclib4\Crypt\Common\PrivateKey;
-use phpseclib4\Crypt\PublicKeyLoader;
 use phpseclib4\Exception\RuntimeException;
 use phpseclib4\File\ASN1\Constructed;
 use phpseclib4\File\ASN1\Element;
 use phpseclib4\File\ASN1\Maps;
 use phpseclib4\File\ASN1\Maps\CRLReason;
 use phpseclib4\File\ASN1\Types\BitString;
-use phpseclib4\File\ASN1\Types\GeneralizedTime;
 use phpseclib4\File\ASN1\Types\OctetString;
-use phpseclib4\File\ASN1\Types\UTCTime;
 use phpseclib4\File\Common\Signable;
 use phpseclib4\Math\BigInteger;
 
@@ -494,7 +491,7 @@ class CRL implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
                 return [
                     'extnId' => $name,
                     'extnValue' => $ext['extnValue'],
-                    'critical' => is_bool($ext['critical']) ? $ext['critical'] : $ext['critical']->value
+                    'critical' => is_bool($ext['critical']) ? $ext['critical'] : $ext['critical']->value,
                 ];
             }
         }
@@ -515,7 +512,7 @@ class CRL implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
                 return [
                     'extnId' => $ext['extnId'],
                     'extnValue' => $ext['extnValue'],
-                    'critical' => is_bool($ext['critical']) ? $ext['critical'] : $ext['critical']->value
+                    'critical' => is_bool($ext['critical']) ? $ext['critical'] : $ext['critical']->value,
                 ];
             }
         }
@@ -635,7 +632,7 @@ class CRL implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringable
             ];
             return;
         }
-        foreach ($revoked['crlEntryExtensions'] as $i=>$ext) {
+        foreach ($revoked['crlEntryExtensions'] as $i => $ext) {
             $ext = &$revoked['crlEntryExtensions'][$i];
             if ("$ext[extnId]" == $name) {
                 $ext['extnValue'] = $value;

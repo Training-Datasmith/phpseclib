@@ -53,7 +53,7 @@ class SSH2AgentTest extends PhpseclibFunctionalTestCase
         $this->assertEquals($username, trim($ssh->exec('whoami')));
 
         $agent->startSSHForwarding($ssh);
-        $this->assertEquals($username, trim($ssh->exec("ssh " . $username . "@" . $hostname . ' \'whoami\'')));
+        $this->assertEquals($username, trim($ssh->exec('ssh ' . $username . '@' . $hostname . ' \'whoami\'')));
 
         return $args;
     }

@@ -63,8 +63,9 @@ class Integer extends Base implements \Stringable
     public function __construct(/**
      * Keeps track of current instance
      */
-    protected $instanceID, $num = '')
-    {
+        protected $instanceID,
+        $num = ''
+    ) {
         if (!strlen((string) $num)) {
             $this->value = '';
         } else {

@@ -38,8 +38,8 @@ abstract class EncryptedContentInfo
             'encryptedContent' => [
                 'constant' => 0,
                 'optional' => true,
-                'implicit' => true
+                'implicit' => true,
             ] + EncryptedContent::MAP,
-        ]
+        ],
     ];
 }

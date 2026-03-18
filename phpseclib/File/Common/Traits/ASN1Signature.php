@@ -15,8 +15,8 @@ declare(strict_types=1);
 
 namespace phpseclib4\File\Common\Traits;
 
-use phpseclib4\Crypt\Common\PublicKey;
 use phpseclib4\Crypt\Common\PrivateKey;
+use phpseclib4\Crypt\Common\PublicKey;
 use phpseclib4\Crypt\DSA;
 use phpseclib4\Crypt\EC;
 use phpseclib4\Crypt\RSA;
@@ -48,13 +48,14 @@ trait ASN1Signature
                 $r = PSS::load($key->withPassword()->toString('PSS'));
                 return [
                     'algorithm' => 'id-RSASSA-PSS',
-                    'parameters' => PSS::savePSSParams($r)
+                    'parameters' => PSS::savePSSParams($r),
                 ];
             }
             switch ($hash) {
                 case 'sha512/224':
                 case 'sha512/256':
                     $hash = str_replace('/', '-', $hash);
+                    // no break
                 case 'md2':
                 case 'md5':
                 case 'sha1':

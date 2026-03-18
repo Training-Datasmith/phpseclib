@@ -16,7 +16,6 @@ declare(strict_types=1);
 namespace phpseclib4\File\Common\Traits;
 
 use phpseclib4\Common\Functions\Arrays;
-use phpseclib4\Exception\InvalidArgumentException;
 use phpseclib4\File\ASN1;
 use phpseclib4\File\ASN1\Constructed;
 use phpseclib4\File\ASN1\Element;
@@ -127,7 +126,7 @@ trait Extension
                     // decode it again
                 };
                 break;
-            // see https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
+                // see https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.10
             case 'id-ce-nameConstraints':
                 $rules['permittedSubtrees']['*']['base'] = $rules['excludedSubtrees']['*']['base'] = function (Choice $el): void {
                     if (isset($el['iPAddress'])) {
@@ -139,7 +138,7 @@ trait Extension
                     }
                 };
                 break;
-            // see https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
+                // see https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.6
             case 'id-ce-subjectAltName':
             case 'id-ce-issuerAltName':
             case 'id-ce-authorityKeyIdentifier':

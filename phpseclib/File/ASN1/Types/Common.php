@@ -116,7 +116,7 @@ trait Common
 
     public function getTypeID(): int
     {
-        $reflection = new \ReflectionClassConstant(static::CLASS, 'TYPE');
+        $reflection = new \ReflectionClassConstant(static::class, 'TYPE');
         return $reflection->getValue();
     }
 }

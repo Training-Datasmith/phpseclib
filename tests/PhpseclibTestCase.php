@@ -61,14 +61,14 @@ abstract class PhpseclibTestCase extends TestCase
                 if (extension_loaded('runkit')) {
                     if (!runkit_constant_redefine($constant, $expected)) {
                         self::markTestSkipped(sprintf(
-                            "Failed to redefine constant %s to %s",
+                            'Failed to redefine constant %s to %s',
                             $constant,
                             $expected
                         ));
                     }
                 } else {
                     self::markTestSkipped(sprintf(
-                        "Skipping test because constant %s is %s instead of %s",
+                        'Skipping test because constant %s is %s instead of %s',
                         $constant,
                         $value,
                         $expected

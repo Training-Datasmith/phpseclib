@@ -25,34 +25,32 @@ namespace phpseclib4\File;
 
 use phpseclib4\Common\Functions\Strings;
 use phpseclib4\Crypt\Common\PublicKey;
-use phpseclib4\Exception\RuntimeException;
 use phpseclib4\Exception\EncodedDataUnavailableException;
 use phpseclib4\Exception\EOCException;
-use phpseclib4\Exception\InvalidArgumentException;
 use phpseclib4\Exception\NoValidTagFoundException;
+use phpseclib4\Exception\RuntimeException;
 use phpseclib4\Exception\UnsupportedFormatException;
 use phpseclib4\File\ASN1\Constructed;
 use phpseclib4\File\ASN1\Element;
 use phpseclib4\File\ASN1\MalformedData;
 use phpseclib4\File\ASN1\Types\BaseType;
-use phpseclib4\File\ASN1\Types\BMPString;
 use phpseclib4\File\ASN1\Types\BitString;
+use phpseclib4\File\ASN1\Types\BMPString;
 use phpseclib4\File\ASN1\Types\Boolean;
 use phpseclib4\File\ASN1\Types\Choice;
 use phpseclib4\File\ASN1\Types\ExplicitNull;
-use phpseclib4\File\ASN1\Types\GeneralString;
 use phpseclib4\File\ASN1\Types\GeneralizedTime;
+use phpseclib4\File\ASN1\Types\GeneralString;
 use phpseclib4\File\ASN1\Types\GraphicString;
 use phpseclib4\File\ASN1\Types\IA5String;
 use phpseclib4\File\ASN1\Types\Integer;
 use phpseclib4\File\ASN1\Types\NumericString;
-use phpseclib4\File\ASN1\Types\OID;
 use phpseclib4\File\ASN1\Types\OctetString;
+use phpseclib4\File\ASN1\Types\OID;
 use phpseclib4\File\ASN1\Types\PrintableString;
 use phpseclib4\File\ASN1\Types\TeletexString;
 use phpseclib4\File\ASN1\Types\UTCTime;
 use phpseclib4\File\ASN1\Types\UTF8String;
-use phpseclib4\File\ASN1\Types\UniversalString;
 use phpseclib4\File\ASN1\Types\VideotexString;
 use phpseclib4\File\ASN1\Types\VisibleString;
 use phpseclib4\File\CMS\EnvelopedData\KeyAgreeRecipient\EncryptedKey;
@@ -72,37 +70,37 @@ abstract class ASN1
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_ARRAY = 0;
+    public const DN_ARRAY = 0;
     /**
      * Return string
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_STRING = 1;
+    public const DN_STRING = 1;
     /**
      * Return ASN.1 name string
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_ASN1 = 2;
+    public const DN_ASN1 = 2;
     /**
      * Return OpenSSL compatible array
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_OPENSSL = 3;
+    public const DN_OPENSSL = 3;
     /**
      * Return canonical ASN.1 RDNs string
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_CANON = 4;
+    public const DN_CANON = 4;
     /**
      * Return name hash for file indexing
      *
      * @see \phpseclib4\File\X509::getDN()
      */
-    const DN_HASH = 5;
+    public const DN_HASH = 5;
 
     // Tag Classes
     // http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf#page=12
@@ -411,7 +409,7 @@ abstract class ASN1
                 $encoded_pos,
                 $current['headerlength'],
                 $headercontent
-             )];
+            )];
         }
 
         // decode UNIVERSAL tags
@@ -473,13 +471,13 @@ abstract class ASN1
                     $current['content'] = new MalformedData($headercontent . $content);
                 }
                 break;
-            /* Each character string type shall be encoded as if it had been declared:
-               [UNIVERSAL x] IMPLICIT OCTET STRING
+                /* Each character string type shall be encoded as if it had been declared:
+                   [UNIVERSAL x] IMPLICIT OCTET STRING
 
-                 -- X.690-0207.pdf#page=23 (paragraph 8.21.3)
+                     -- X.690-0207.pdf#page=23 (paragraph 8.21.3)
 
-               Per that, we're not going to do any validation.  If there are any illegal characters in the string,
-               we don't really care */
+                   Per that, we're not going to do any validation.  If there are any illegal characters in the string,
+                   we don't really care */
             case self::TYPE_NUMERIC_STRING:
                 $current['content'] = new NumericString($content);
                 break;
@@ -526,9 +524,9 @@ abstract class ASN1
         }
 
         // ie. length is the length of the full TLV encoding - it's not just the length of the value
-        $current+= ['length' => $start - $current['start']];
+        $current += ['length' => $start - $current['start']];
         $current['content']->addMetadata([
-            'rawheader'=> $headercontent,
+            'rawheader' => $headercontent,
             'content' => $content,
         ] + $current);
 
@@ -781,10 +779,10 @@ abstract class ASN1
                 case $mapping['type'] === ASN1::TYPE_BOOLEAN && $source === (new Boolean($mapping['default'])):
                     return '';
                 case $mapping['type'] === ASN1::TYPE_INTEGER && $source instanceof Integer:
-                   switch (true) {
-                       case isset($mapping['mapping']) && $source->mappedValue === $mapping['default']:
-                       case !isset($mapping['mapping']) && $source->toString() == $mapping['default']:
-                           return '';
+                    switch (true) {
+                        case isset($mapping['mapping']) && $source->mappedValue === $mapping['default']:
+                        case !isset($mapping['mapping']) && $source->toString() == $mapping['default']:
+                            return '';
                     }
             }
         }
@@ -951,7 +949,7 @@ abstract class ASN1
             case self::TYPE_UTC_TIME:
             case self::TYPE_GENERALIZED_TIME:
                 if (!is_string($source) && !$source instanceof \DateTimeInterface) {
-                    $type = is_object($source) ? $source::CLASS : gettype($source);
+                    $type = is_object($source) ? $source::class : gettype($source);
                     throw new RuntimeException(implode('/', self::$location) . " should be either a string or an instance of DateTimeInterface - $type given");
                 }
                 if ($tag === self::TYPE_UTC_TIME) {
@@ -982,7 +980,7 @@ abstract class ASN1
                     }
                     if (!is_array($source)) {
                         if (!is_string($source)) {
-                            $type = is_object($source) ? $source::CLASS : gettype($source);
+                            $type = is_object($source) ? $source::class : gettype($source);
                             throw new RuntimeException(implode('/', self::$location) . " should be either a string, an array or an instance of BitString - $type provided");
                         }
                         $value = $source;
@@ -1019,7 +1017,7 @@ abstract class ASN1
                     break;
                 }
                 if (!is_string($source) && !$source instanceof BitString) {
-                    $type = is_object($source) ? $source::CLASS : gettype($source);
+                    $type = is_object($source) ? $source::class : gettype($source);
                     throw new RuntimeException(implode('/', self::$location) . " should be either a string or an instance of BitString - $type provided");
                 }
                 $value = (string) $source;
@@ -1030,7 +1028,7 @@ abstract class ASN1
 
                    -- http://www.itu.int/ITU-T/studygroups/com17/languages/X.690-0207.pdf#page=16 */
                 if (!Strings::is_stringable($source)) {
-                    $type = is_object($source) ? $source::CLASS : gettype($source);
+                    $type = is_object($source) ? $source::class : gettype($source);
                     throw new RuntimeException(implode('/', self::$location) . " (a $type) could not be converted to a string");
                 }
                 $value = (string) $source;

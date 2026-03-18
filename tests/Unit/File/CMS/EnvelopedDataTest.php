@@ -11,9 +11,9 @@ declare(strict_types=1);
 namespace phpseclib4\Tests\Unit\File\CMS;
 
 use phpseclib4\Crypt\EC;
+use phpseclib4\Crypt\PublicKeyLoader;
 use phpseclib4\Crypt\Random;
 use phpseclib4\Crypt\RSA;
-use phpseclib4\Crypt\PublicKeyLoader;
 use phpseclib4\File\CMS;
 use phpseclib4\File\X509;
 use phpseclib4\Tests\PhpseclibTestCase;

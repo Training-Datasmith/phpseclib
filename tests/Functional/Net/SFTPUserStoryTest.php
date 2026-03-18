@@ -344,7 +344,7 @@ class SFTPUserStoryTest extends PhpseclibFunctionalTestCase
     {
         $this->assertTrue(
             $sftp->mkdir('temp'),
-            "Failed asserting that a new scratch directory temp could " .
+            'Failed asserting that a new scratch directory temp could ' .
             'be created.'
         );
 
@@ -837,7 +837,6 @@ class SFTPUserStoryTest extends PhpseclibFunctionalTestCase
         }, 0, 1);
         return $sftp;
     }
-
 
     /**
      * @depends testPasswordLogin

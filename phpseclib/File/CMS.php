@@ -19,7 +19,6 @@ namespace phpseclib4\File;
 
 use phpseclib4\Exception\RuntimeException;
 use phpseclib4\File\ASN1\Constructed;
-use phpseclib4\File\ASN1\Maps;
 
 /**
  * Pure-PHP CMS Parser
@@ -86,7 +85,7 @@ abstract class CMS
                     [
                         'issuer' => $x509['tbsCertificate']['issuer'],
                         'serialNumber' => $x509['tbsCertificate']['serialNumber'],
-                    ]
+                    ],
                 ];
             case CMS::KEY_ID:
                 $keyID = $x509->getExtension('id-ce-subjectKeyIdentifier');

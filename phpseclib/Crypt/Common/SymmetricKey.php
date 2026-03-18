@@ -2699,7 +2699,7 @@ abstract class SymmetricKey
                     return $_plaintext;
                     ';
                 break;
-            // case self::MODE_CBC:
+                // case self::MODE_CBC:
             default:
                 $encrypt = $init_encrypt . '
                     $_ciphertext = "";

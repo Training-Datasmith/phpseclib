@@ -118,6 +118,7 @@ abstract class MSBLOB
             case self::RSA2:
                 $components['isPublicKey'] = false;
                 // fall-through
+                // no break
             case self::RSA1:
                 break;
             default:

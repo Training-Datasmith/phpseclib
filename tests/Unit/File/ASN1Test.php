@@ -10,11 +10,11 @@ declare(strict_types=1);
 
 namespace phpseclib4\Tests\Unit\File;
 
+use phpseclib4\Common\Functions\Arrays;
 use phpseclib4\File\ASN1;
 use phpseclib4\File\ASN1\Constructed;
 use phpseclib4\File\ASN1\MalformedData;
 use phpseclib4\File\ASN1\Maps;
-use phpseclib4\Common\Functions\Arrays;
 use phpseclib4\Tests\PhpseclibTestCase;
 
 class ASN1Test extends PhpseclibTestCase

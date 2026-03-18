@@ -10,9 +10,9 @@ declare(strict_types=1);
 
 namespace phpseclib4\Tests\Unit\File\X509;
 
-use phpseclib4\Crypt\RSA\PrivateKey as RSAPrivateKey;
 use phpseclib4\Crypt\EC;
 use phpseclib4\Crypt\EC\PrivateKey as ECPrivateKey;
+use phpseclib4\Crypt\RSA\PrivateKey as RSAPrivateKey;
 use phpseclib4\File\PFX;
 use phpseclib4\File\X509;
 use phpseclib4\Tests\PhpseclibTestCase;

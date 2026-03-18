@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pure-PHP CMS / DigestedData Parser
  *
@@ -53,7 +54,7 @@ class DigestedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
                     'eContent' => new OctetString($data),
                 ],
                 'digest' => $hash->hash($data),
-            ]
+            ],
         ];
     }
 

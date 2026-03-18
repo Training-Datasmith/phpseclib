@@ -28,6 +28,6 @@ abstract class DigestAlgorithmIdentifiers extends AlgorithmIdentifier
         'type' => ASN1::TYPE_SET,
         'min' => 1,
         'max' => -1,
-        'children' => DigestAlgorithmIdentifier::MAP
+        'children' => DigestAlgorithmIdentifier::MAP,
     ];
 }

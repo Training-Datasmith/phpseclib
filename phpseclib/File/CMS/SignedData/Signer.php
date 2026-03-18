@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pure-PHP CMS / SignedData Parser
  *
@@ -279,7 +280,7 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringab
                 'issuerAndSerialNumber' => [
                     'issuer' => $expected['issuerSerial']['issuer'][0]['directoryName'],
                     'serialNumber' => $expected['issuerSerial']['serialNumber'],
-                ]
+                ],
             ];
             $hash = new Hash($hash);
         }
@@ -316,9 +317,9 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringab
                 case isset($cert['certificate']): // && $cert['certificate'] instanceof X509:
                     $cert = $cert['certificate'];
                     break;
-                // extended certificates are basically wrappers around regular X509 certs with unsigned attributes
-                // living alongside the cert. this was intended for pre-v3 X509 certs where extensions were not
-                // included
+                    // extended certificates are basically wrappers around regular X509 certs with unsigned attributes
+                    // living alongside the cert. this was intended for pre-v3 X509 certs where extensions were not
+                    // included
                 case isset($cert['extendedCertificate']): // obsolete
                     //$cert = $cert['extendedCertificiate']['certificate'];
                     //break;
@@ -390,8 +391,7 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringab
 
     public function validateSignature(bool $caonly = true): bool
     {
-        if (count($this->signer['signedAttrs']))
-        {
+        if (count($this->signer['signedAttrs'])) {
             $messageDigest = $this->cms->calculateFileHash(preg_replace('#^id-#', '', (string) $this->signer['digestAlgorithm']['algorithm']));
             $expectedDigest = $this->getSignedAttr('id-messageDigest');
             if (!isset($expectedDigest)) {
@@ -495,9 +495,9 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringab
                     switch (true) {
                         case isset($this->cms['content']['certificates'][$i]['certificate']):
                             $found = (string) $this->cms['content']['certificates'][$i]['certificate'];
-                        //    break;
-                        //case isset($this->cms['content']['certificates'][$i]['extendedCertificate']['certificate']):
-                        //    $found = (string) $this->cms['content']['certificates'][$i]['extendedCertificate']['certificate'];
+                            //    break;
+                            //case isset($this->cms['content']['certificates'][$i]['extendedCertificate']['certificate']):
+                            //    $found = (string) $this->cms['content']['certificates'][$i]['extendedCertificate']['certificate'];
                     }
                     if ($found === $expected) {
                         $this->cms['content']['certificates'][$i]['certificate'] = $x509;
@@ -512,7 +512,7 @@ class Signer implements \ArrayAccess, \Countable, \Iterator, Signable, \Stringab
             [
                 'issuer' => $x509['tbsCertificate']['issuer'],
                 'serialNumber' => $x509['tbsCertificate']['serialNumber'],
-            ]
+            ],
         ];
         $this->signer['sid'] = $sid;
         $this->signer['version'] = 'v1';

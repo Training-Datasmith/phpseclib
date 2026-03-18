@@ -328,7 +328,7 @@ class Blowfish extends BlockCipher
     public function setKeyLength(int $length): void
     {
         if ($length < 32 || $length > 448) {
-                throw new LengthException('Key size of ' . $length . ' bits is not supported by this algorithm. Only keys of sizes between 32 and 448 bits are supported');
+            throw new LengthException('Key size of ' . $length . ' bits is not supported by this algorithm. Only keys of sizes between 32 and 448 bits are supported');
         }
 
         $this->key_length = $length >> 3;
@@ -524,7 +524,7 @@ class Blowfish extends BlockCipher
         ];
 
         // @codingStandardsIgnoreStart
-        [ $p[0],  $p[1]] = self::encryptBlockHelperFast(     0,      0, $sbox, $p);
+        [ $p[0],  $p[1]] = self::encryptBlockHelperFast(0, 0, $sbox, $p);
         [ $p[2],  $p[3]] = self::encryptBlockHelperFast($p[ 0], $p[ 1], $sbox, $p);
         [ $p[4],  $p[5]] = self::encryptBlockHelperFast($p[ 2], $p[ 3], $sbox, $p);
         [ $p[6],  $p[7]] = self::encryptBlockHelperFast($p[ 4], $p[ 5], $sbox, $p);
@@ -575,7 +575,7 @@ class Blowfish extends BlockCipher
         ];
 
         // @codingStandardsIgnoreStart
-        [ $p[0],  $p[1]] = self::encryptBlockHelperFast($data[ 0]         , $data[ 1]         , $sbox, $p);
+        [ $p[0],  $p[1]] = self::encryptBlockHelperFast($data[ 0], $data[ 1], $sbox, $p);
         [ $p[2],  $p[3]] = self::encryptBlockHelperFast($data[ 2] ^ $p[ 0], $data[ 3] ^ $p[ 1], $sbox, $p);
         [ $p[4],  $p[5]] = self::encryptBlockHelperFast($data[ 4] ^ $p[ 2], $data[ 5] ^ $p[ 3], $sbox, $p);
         [ $p[6],  $p[7]] = self::encryptBlockHelperFast($data[ 6] ^ $p[ 4], $data[ 7] ^ $p[ 5], $sbox, $p);
@@ -609,7 +609,7 @@ class Blowfish extends BlockCipher
             self::encryptBlockHelperSlow($l, $r, $sb, $p) :
             self::encryptBlockHelperFast($l, $r, $sb, $p);
 
-        return pack("N*", $r, $l);
+        return pack('N*', $r, $l);
     }
 
     /**
@@ -743,7 +743,7 @@ class Blowfish extends BlockCipher
             );
         ';
 
-         // Generating decrypt code:
+        // Generating decrypt code:
         $decrypt_block = '
             $in = unpack("N*", $in);
             $l = $in[1];

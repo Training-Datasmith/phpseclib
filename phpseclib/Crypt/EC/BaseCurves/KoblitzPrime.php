@@ -152,7 +152,7 @@ class KoblitzPrime extends Prime
             ];
 
             if (isset($p['naf'])) {
-                $beta['naf'] = array_map(fn(array $p) => [
+                $beta['naf'] = array_map(fn (array $p) => [
                     $p[0]->multiply($this->beta),
                     $p[1],
                     clone $this->one,

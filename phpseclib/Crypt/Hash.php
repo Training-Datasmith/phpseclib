@@ -330,6 +330,7 @@ class Hash implements \Stringable
             case 'keccak256':
                 $this->paddingType = self::PADDING_KECCAK;
                 // fall-through
+                // no break
             case 'sha256':
             case 'sha512/256':
             case 'sha3-256':

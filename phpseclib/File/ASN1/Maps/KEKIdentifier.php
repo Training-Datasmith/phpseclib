@@ -30,7 +30,7 @@ abstract class KEKIdentifier
             'keyIdentifier' => ['type' => ASN1::TYPE_OCTET_STRING],
             'date' => [
                 'type' => ASN1::TYPE_GENERALIZED_TIME,
-                'optional' => true
+                'optional' => true,
             ],
             'other' => ['optional' => true] + OtherKeyAttribute::MAP,
         ],

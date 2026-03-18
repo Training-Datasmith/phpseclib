@@ -28,6 +28,6 @@ abstract class CompressionAlgorithmIdentifiers
         'type' => ASN1::TYPE_SET,
         'min' => 1,
         'max' => -1,
-        'children' => CompressionAlgorithmIdentifier::MAP
+        'children' => CompressionAlgorithmIdentifier::MAP,
     ];
 }

@@ -74,8 +74,9 @@ class Integer extends Base implements \Stringable
     public function __construct(/**
      * Keeps track of current instance
      */
-    protected int $instanceID, ?BigInteger $num = null)
-    {
+        protected int $instanceID,
+        ?BigInteger $num = null
+    ) {
         if (!isset($num)) {
             $this->value = clone static::$zero[$this->instanceID];
         } else {

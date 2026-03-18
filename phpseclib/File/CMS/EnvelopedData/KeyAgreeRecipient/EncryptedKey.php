@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pure-PHP CMS / KeyAgreeRecipient / EncryptedKey Parser
  *
@@ -16,7 +17,6 @@ declare(strict_types=1);
 
 namespace phpseclib4\File\CMS\EnvelopedData\KeyAgreeRecipient;
 
-use phpseclib4\Common\Functions\Strings;
 use phpseclib4\Crypt\EC;
 use phpseclib4\Crypt\PublicKeyLoader;
 use phpseclib4\File\ASN1;
@@ -105,7 +105,7 @@ class EncryptedKey implements DerivableKey, SearchableKey, \ArrayAccess, \Counta
         }
         $sharedInfo = [
             'keyInfo' => new ASN1\Element($this->recipient['keyEncryptionAlgorithm']['parameters']->getEncoded()),
-            'suppPubInfo' => pack('N', $length << 3)
+            'suppPubInfo' => pack('N', $length << 3),
         ];
         // this can't be set via OpenSSL CLI
         if (isset($this->recipient['ukm'])) {

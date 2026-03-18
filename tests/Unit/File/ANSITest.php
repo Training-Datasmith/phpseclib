@@ -18,10 +18,10 @@ class ANSITest extends PhpseclibTestCase
     public function testCase1(): void
     {
         $str = "\x1B[07m"; // turn reverse video on
-        $str .= "aaaaaaaaaaaaaaaaaa";
+        $str .= 'aaaaaaaaaaaaaaaaaa';
         $str .= "\x1B[10D"; // move cursor left 10 lines
         $str .= "\x1B[m"; // reset everything
-        $str .= "bbb";
+        $str .= 'bbb';
 
         $ansi = new ANSI();
         $ansi->appendString($str);
@@ -38,7 +38,7 @@ class ANSITest extends PhpseclibTestCase
     public function testCaseJ(): void
     {
         $str = "\x1B[H"; // Move cursor to upper left corner
-        $str .= "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        $str .= 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
         $str .= "\x1B[H"; // Move cursor to upper left corner
         $str .= "\x1B[J"; // Clear screen from cursor down
 

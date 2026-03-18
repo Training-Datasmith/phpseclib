@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pure-PHP CMS / EncryptedData Parser
  *
@@ -17,33 +18,30 @@ declare(strict_types=1);
 namespace phpseclib4\File\CMS;
 
 use phpseclib4\Common\Functions\Strings;
+use phpseclib4\Crypt\AES;
 use phpseclib4\Crypt\EC;
 use phpseclib4\Crypt\Random;
-use phpseclib4\Crypt\AES;
 use phpseclib4\Crypt\RSA;
 use phpseclib4\Crypt\TripleDES;
 use phpseclib4\Exception\BadDecryptionException;
 use phpseclib4\Exception\BadMethodCallException;
 use phpseclib4\Exception\InsufficientSetupException;
 use phpseclib4\Exception\LengthException;
-use phpseclib4\Exception\RuntimeException;
 use phpseclib4\Exception\UnexpectedValueException;
 use phpseclib4\File\ASN1;
 use phpseclib4\File\ASN1\Constructed;
 use phpseclib4\File\ASN1\Element;
 use phpseclib4\File\ASN1\Maps;
-use phpseclib4\File\ASN1\Maps\RSAPublicKey;
 use phpseclib4\File\ASN1\Types\Choice;
 use phpseclib4\File\ASN1\Types\OctetString;
 use phpseclib4\File\ASN1\Types\OID;
 use phpseclib4\File\CMS;
 use phpseclib4\File\CMS\EnvelopedData\DerivableKey;
-use phpseclib4\File\CMS\EnvelopedData\KeyTransRecipient;
-use phpseclib4\File\CMS\EnvelopedData\KeyAgreeRecipient;
-use phpseclib4\File\CMS\EnvelopedData\KeyAgreeRecipient\EncryptedKey;
 use phpseclib4\File\CMS\EnvelopedData\KEKRecipient;
-use phpseclib4\File\CMS\EnvelopedData\PasswordRecipient;
+use phpseclib4\File\CMS\EnvelopedData\KeyAgreeRecipient;
+use phpseclib4\File\CMS\EnvelopedData\KeyTransRecipient;
 use phpseclib4\File\CMS\EnvelopedData\OtherRecipient;
+use phpseclib4\File\CMS\EnvelopedData\PasswordRecipient;
 use phpseclib4\File\CMS\EnvelopedData\Recipient;
 use phpseclib4\File\CMS\EnvelopedData\SearchableKey;
 use phpseclib4\File\CRL;
@@ -86,8 +84,8 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
                         'parameters' => new OctetString($iv),
                     ],
                     'encryptedContent' => $encrypted,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -579,7 +577,7 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
                             'parameters' => ['algorithm' => $mgfHash],
                         ],
                         'pSourceAlgorithm' => ['algorithm' => 'id-pSpecified', 'parameters' => new OctetString($publicKey->getLabel())],
-                    ]
+                    ],
                 ];
                 $mgf = &$algorithm['parameters']['maskGenAlgorithm']['parameters'];
                 $mgf = new Element(ASN1::encodeDER($mgf, Maps\AlgorithmIdentifier::MAP));
@@ -603,7 +601,7 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
             $parameters = new ASN1\Element(ASN1::encodeDER(['algorithm' => 'id-aes128-wrap'], Maps\AlgorithmIdentifier::MAP));
             $sharedInfo = [
                 'keyInfo' => $parameters,
-                'suppPubInfo' => pack('N', 128)
+                'suppPubInfo' => pack('N', 128),
             ];
             $sharedInfo = ASN1::encodeDER($sharedInfo, Maps\ECCCMSSharedInfo::MAP);
             $hash = $publicKey->getHash();
@@ -699,8 +697,8 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
         $counter = "\0\0\0\1";
         $hashlen = $hash->getLengthInBytes();
         $k = '';
-        for ($i = 1; $i <= ceil($keydatalen/$hashlen); $i++) {
-            $k.= $hash->hash($z . $counter . $sharedinfo);
+        for ($i = 1; $i <= ceil($keydatalen / $hashlen); $i++) {
+            $k .= $hash->hash($z . $counter . $sharedinfo);
             Strings::increment_str($counter);
         }
         return substr($k, 0, $keydatalen);
@@ -734,22 +732,22 @@ class EncryptedData implements \ArrayAccess, \Countable, \Iterator, \Stringable
                 // standard X509 cert
                 case isset($cert['certificate']): // && $cert['certificate'] instanceof X509:
                     $certs[] = $cert['certificate'];
-                //    break;
-                // extended certificates are basically wrappers around regular X509 certs with unsigned attributes
-                // living alongside the cert. this was intended for pre-v3 X509 certs where extensions were not
-                // included
-                //case isset($cert['extendedCertificate']): // obsolete
-                //if ($this->isSignedBy($cert['extendedCertificate']['certificate'])) {
-                //    $signingCert = $cert['extendedCertificiate']['certificate'];
-                //}
-                //break;
-                //case isset($cert['v1AttrCert']): // obsolete
-                // ['v1AttrCert']['acInfo'] = $AttributeCertificateInfoV1 ?
-                //case isset($cert['v2AttrCert']):
-                // ['v2AttrCert']['acInfo'] = $AttributeCertificateInfo ?
-                //case isset($cert['other']):
-                // ['other']['otherCert'] = ???
-                //    continue 2;
+                    //    break;
+                    // extended certificates are basically wrappers around regular X509 certs with unsigned attributes
+                    // living alongside the cert. this was intended for pre-v3 X509 certs where extensions were not
+                    // included
+                    //case isset($cert['extendedCertificate']): // obsolete
+                    //if ($this->isSignedBy($cert['extendedCertificate']['certificate'])) {
+                    //    $signingCert = $cert['extendedCertificiate']['certificate'];
+                    //}
+                    //break;
+                    //case isset($cert['v1AttrCert']): // obsolete
+                    // ['v1AttrCert']['acInfo'] = $AttributeCertificateInfoV1 ?
+                    //case isset($cert['v2AttrCert']):
+                    // ['v2AttrCert']['acInfo'] = $AttributeCertificateInfo ?
+                    //case isset($cert['other']):
+                    // ['other']['otherCert'] = ???
+                    //    continue 2;
             }
         }
         return $certs;

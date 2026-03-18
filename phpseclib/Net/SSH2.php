@@ -1000,7 +1000,7 @@ class SSH2 implements \Stringable
      *
      * @see SSH2::setTimeout()
      */
-    protected int|null $timeout = 10)
+        protected int|null $timeout = 10)
     {
         self::$connections[$this->getResourceId()] = \WeakReference::create($this);
 
@@ -1675,6 +1675,7 @@ class SSH2 implements \Stringable
                     $this->encryptFixedPart = substr($nonce, 0, 4);
                     $this->encryptInvocationCounter = substr($nonce, 4, 8);
                     // fall-through
+                    // no break
                 case 'chacha20-poly1305@openssh.com':
                     break;
                 default:
@@ -1721,6 +1722,7 @@ class SSH2 implements \Stringable
                     $this->decryptFixedPart = substr($nonce, 0, 4);
                     $this->decryptInvocationCounter = substr($nonce, 4, 8);
                     // fall-through
+                    // no break
                 case 'chacha20-poly1305@openssh.com':
                     break;
                 default:
@@ -1993,6 +1995,7 @@ class SSH2 implements \Stringable
                                 }
                             }
                             // fall-through
+                            // no break
                         case 'password':
                             foreach ($args as $key => $arg) {
                                 $newargs[] = $arg;
@@ -2102,6 +2105,7 @@ class SSH2 implements \Stringable
                     [$auth_methods] = Strings::unpackSSH2('L', $response);
                     $this->auth_methods_to_continue = $auth_methods;
                     // fall-through
+                    // no break
                 default:
                     return false;
             }
@@ -2329,7 +2333,7 @@ class SSH2 implements \Stringable
                     $hash = 'sha256';
                     $signatureType = 'rsa-sha2-256';
                     break;
-                //case 'ssh-rsa':
+                    //case 'ssh-rsa':
                 default:
                     $hash = 'sha1';
                     $signatureType = 'ssh-rsa';
@@ -3345,6 +3349,7 @@ class SSH2 implements \Stringable
                     break;
                 }
                 // fall-through
+                // no break
             case self::NET_SSH2_COMPRESSION_ZLIB:
                 if ($this->regenerate_decompression_context) {
                     $this->regenerate_decompression_context = false;
@@ -3757,8 +3762,8 @@ class SSH2 implements \Stringable
 
                 // resize the window, if appropriate
                 if ($this->window_size_server_to_client[$channel] < 0) {
-                // PuTTY does something more analogous to the following:
-                //if ($this->window_size_server_to_client[$channel] < 0x3FFFFFFF) {
+                    // PuTTY does something more analogous to the following:
+                    //if ($this->window_size_server_to_client[$channel] < 0x3FFFFFFF) {
                     $packet = pack('CNN', MessageType::CHANNEL_WINDOW_ADJUST, $this->server_channels[$channel], $this->window_resize);
                     $this->send_binary_packet($packet);
                     $this->window_size_server_to_client[$channel] += $this->window_resize;
@@ -3883,6 +3888,7 @@ class SSH2 implements \Stringable
                                 $this->disconnect_helper(DisconnectReason::BY_APPLICATION);
                                 throw new RuntimeException('Unable to fulfill channel request');
                         }
+                        // no break
                     case MessageType::CHANNEL_CLOSE:
                         if ($client_channel == $channel && $type == MessageType::CHANNEL_CLOSE) {
                             return true;
@@ -3935,6 +3941,7 @@ class SSH2 implements \Stringable
                         return true;
                     }
                     // fall-through
+                    // no break
                 case MessageType::CHANNEL_EOF:
                     break;
                 default:
@@ -3968,6 +3975,7 @@ class SSH2 implements \Stringable
                     break;
                 }
                 // fall-through
+                // no break
             case self::NET_SSH2_COMPRESSION_ZLIB:
                 if (!$this->regenerate_compression_context) {
                     $header = '';
@@ -4094,7 +4102,7 @@ class SSH2 implements \Stringable
             $this->disconnect_helper(DisconnectReason::BY_APPLICATION);
             $message = $sent === false ?
                 'Unable to write ' . strlen($packet) . ' bytes' :
-                "Only $sent of " . strlen($packet) . " bytes were sent";
+                "Only $sent of " . strlen($packet) . ' bytes were sent';
             throw new RuntimeException($message);
         }
 
@@ -4159,7 +4167,7 @@ class SSH2 implements \Stringable
                 @flush();
                 @ob_flush();
                 break;
-            // the most useful log for SSH2
+                // the most useful log for SSH2
             case self::LOG_COMPLEX:
                 $message_number_log[] = $message_number;
                 $log_size += strlen($message);
@@ -4169,9 +4177,9 @@ class SSH2 implements \Stringable
                     array_shift($message_number_log);
                 }
                 break;
-            // dump the output out realtime; packets may be interspersed with non packets,
-            // passwords won't be filtered out and select other packets may not be correctly
-            // identified
+                // dump the output out realtime; packets may be interspersed with non packets,
+                // passwords won't be filtered out and select other packets may not be correctly
+                // identified
             case self::LOG_REALTIME:
                 switch (PHP_SAPI) {
                     case 'cli':
@@ -4185,10 +4193,10 @@ class SSH2 implements \Stringable
                 @flush();
                 @ob_flush();
                 break;
-            // basically the same thing as self::LOG_REALTIME with the caveat that NET_SSH2_LOG_REALTIME_FILENAME
-            // needs to be defined and that the resultant log file will be capped out at self::LOG_MAX_SIZE.
-            // the earliest part of the log file is denoted by the first <<< START >>> and is not going to necessarily
-            // at the beginning of the file
+                // basically the same thing as self::LOG_REALTIME with the caveat that NET_SSH2_LOG_REALTIME_FILENAME
+                // needs to be defined and that the resultant log file will be capped out at self::LOG_MAX_SIZE.
+                // the earliest part of the log file is denoted by the first <<< START >>> and is not going to necessarily
+                // at the beginning of the file
             case self::LOG_REALTIME_FILE:
                 if (!isset($realtime_log_file)) {
                     // PHP doesn't seem to like using constants in fopen()

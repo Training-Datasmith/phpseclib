@@ -74,7 +74,7 @@ class X509ExtensionTest extends PhpseclibTestCase
         $this->assertInstanceOf('phpseclib4\Math\BigInteger', $customExtensionDecodedData['num']);
         $this->assertSame('3', (string) $customExtensionDecodedData['num']);
         $this->assertSame('Johnny', (string) $customExtensionDecodedData['name']);
-        $this->assertSame(['foo', 'bar'], array_map(fn($x) => "$x", $customExtensionDecodedData['list']->toArray()));
+        $this->assertSame(['foo', 'bar'], array_map(fn ($x) => "$x", $customExtensionDecodedData['list']->toArray()));
         $this->assertSame($customExtensionMapping, X509::getRegisteredExtension($customExtensionName));
     }
 

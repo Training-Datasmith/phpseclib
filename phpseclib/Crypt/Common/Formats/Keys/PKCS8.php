@@ -28,15 +28,14 @@ declare(strict_types=1);
 namespace phpseclib4\Crypt\Common\Formats\Keys;
 
 use phpseclib4\Common\Functions\Strings;
-use phpseclib4\Exception\InsufficientSetupException;
 use phpseclib4\Exception\RuntimeException;
 use phpseclib4\Exception\UnexpectedValueException;
 use phpseclib4\Exception\UnsupportedAlgorithmException;
 use phpseclib4\File\ASN1;
 use phpseclib4\File\ASN1\Element;
+use phpseclib4\File\ASN1\Maps;
 use phpseclib4\File\ASN1\Types\BaseType;
 use phpseclib4\File\ASN1\Types\ExplicitNull;
-use phpseclib4\File\ASN1\Maps;
 
 /**
  * PKCS#8 Formatted Key Handler
@@ -237,7 +236,7 @@ abstract class PKCS8 extends PKCS
 
             return "-----BEGIN ENCRYPTED PRIVATE KEY-----\r\n" .
                    chunk_split(Strings::base64_encode($key), 64) .
-                   "-----END ENCRYPTED PRIVATE KEY-----";
+                   '-----END ENCRYPTED PRIVATE KEY-----';
         }
 
         if ($options['binary'] ?? self::$binary) {
@@ -246,7 +245,7 @@ abstract class PKCS8 extends PKCS
 
         return "-----BEGIN PRIVATE KEY-----\r\n" .
                chunk_split(Strings::base64_encode($key), 64) .
-               "-----END PRIVATE KEY-----";
+               '-----END PRIVATE KEY-----';
     }
 
     /**
@@ -275,7 +274,7 @@ abstract class PKCS8 extends PKCS
 
         return "-----BEGIN PUBLIC KEY-----\r\n" .
                chunk_split(Strings::base64_encode($key), 64) .
-               "-----END PUBLIC KEY-----";
+               '-----END PUBLIC KEY-----';
     }
 
     /**

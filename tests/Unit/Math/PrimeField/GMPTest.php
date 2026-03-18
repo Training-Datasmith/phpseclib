@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author    Andreas Fischer <bantu@phpbb.com>
  * @copyright 2013 Andreas Fischer

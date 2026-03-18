@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @author    Andreas Fischer <bantu@phpbb.com>
  * @copyright 2014 Andreas Fischer
@@ -13,9 +15,9 @@ use phpseclib4\Tests\PhpseclibFunctionalTestCase;
 
 class SCPSSH2UserStoryTest extends PhpseclibFunctionalTestCase
 {
-    static protected $remoteFile;
-    static protected $exampleData;
-    static protected $exampleDataLength;
+    protected static $remoteFile;
+    protected static $exampleData;
+    protected static $exampleDataLength;
 
     public static function setUpBeforeClass(): void
     {
@@ -72,12 +74,12 @@ class SCPSSH2UserStoryTest extends PhpseclibFunctionalTestCase
         );
         $this->assertContains(
             filesize($localFilename),
-            array(self::$exampleDataLength, self::$exampleDataLength + 1),
+            [self::$exampleDataLength, self::$exampleDataLength + 1],
             'Failed asserting that filesize matches expected data size.'
         );
         $this->assertContains(
             file_get_contents($localFilename),
-            array(self::$exampleData, self::$exampleData . "\0"),
+            [self::$exampleData, self::$exampleData . "\0"],
             'Failed asserting that file content matches expected content.'
         );
         return $scp;

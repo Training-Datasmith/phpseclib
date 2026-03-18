@@ -483,14 +483,14 @@ class Salsa20 extends StreamCipher
         the same way sodium_crypto_aead_chacha20poly1305_ietf_encrypt does. you can see
         how the latter encrypts it in Salsa20::encrypt(). here's how the former encrypts
         it:
-        
+
         $this->newtag = $this->poly1305(
             $this->aad .
             pack('V', strlen($this->aad)) . "\0\0\0\0" .
             $ciphertext .
             pack('V', strlen($ciphertext)) . "\0\0\0\0"
         );
-        
+
         phpseclib opts to use the IETF construction, even when the nonce is 64-bits
         instead of 96-bits
         */

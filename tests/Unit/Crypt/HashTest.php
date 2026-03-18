@@ -473,9 +473,9 @@ class HashTest extends PhpseclibTestCase
     public static function UMACs(): array
     {
         return [
-            ['', 'umac-32', '113145FB', "umac-32 and message of <empty>"],
-            ['', 'umac-64', '6E155FAD26900BE1', "umac-64 and message of <empty>"],
-            ['', 'umac-96', '32FEDB100C79AD58F07FF764', "umac-96 and message of <empty>"],
+            ['', 'umac-32', '113145FB', 'umac-32 and message of <empty>'],
+            ['', 'umac-64', '6E155FAD26900BE1', 'umac-64 and message of <empty>'],
+            ['', 'umac-96', '32FEDB100C79AD58F07FF764', 'umac-96 and message of <empty>'],
             ['aaa', 'umac-32', '3B91D102', "umac-32 and message of 'a' * 3"],
             ['aaa', 'umac-64', '44B5CB542F220104', "umac-64 and message of 'a' * 3"],
             ['aaa', 'umac-96', '185E4FE905CBA7BD85E4C2DC', "umac-96 and message of 'a' * 3"],

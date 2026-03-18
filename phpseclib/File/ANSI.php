@@ -215,6 +215,7 @@ class ANSI
                             array_shift($this->history_attrs);
                         }
                         // fall-through
+                        // no break
                     case "\x1B[K": // Clear screen from cursor right
                         $this->screen[$this->y] = substr($this->screen[$this->y], 0, $this->x);
 
@@ -288,24 +289,40 @@ class ANSI
                                             $back = &$attr_cell->{ $attr_cell->reverse ? 'foreground' : 'background' };
                                             switch ($mod) {
                                                 // @codingStandardsIgnoreStart
-                                                case '30': $front = 'black'; break;
-                                                case '31': $front = 'red'; break;
-                                                case '32': $front = 'green'; break;
-                                                case '33': $front = 'yellow'; break;
-                                                case '34': $front = 'blue'; break;
-                                                case '35': $front = 'magenta'; break;
-                                                case '36': $front = 'cyan'; break;
-                                                case '37': $front = 'white'; break;
+                                                case '30': $front = 'black';
+                                                    break;
+                                                case '31': $front = 'red';
+                                                    break;
+                                                case '32': $front = 'green';
+                                                    break;
+                                                case '33': $front = 'yellow';
+                                                    break;
+                                                case '34': $front = 'blue';
+                                                    break;
+                                                case '35': $front = 'magenta';
+                                                    break;
+                                                case '36': $front = 'cyan';
+                                                    break;
+                                                case '37': $front = 'white';
+                                                    break;
 
-                                                case '40': $back = 'black'; break;
-                                                case '41': $back = 'red'; break;
-                                                case '42': $back = 'green'; break;
-                                                case '43': $back = 'yellow'; break;
-                                                case '44': $back = 'blue'; break;
-                                                case '45': $back = 'magenta'; break;
-                                                case '46': $back = 'cyan'; break;
-                                                case '47': $back = 'white'; break;
-                                                // @codingStandardsIgnoreEnd
+                                                case '40': $back = 'black';
+                                                    break;
+                                                case '41': $back = 'red';
+                                                    break;
+                                                case '42': $back = 'green';
+                                                    break;
+                                                case '43': $back = 'yellow';
+                                                    break;
+                                                case '44': $back = 'blue';
+                                                    break;
+                                                case '45': $back = 'magenta';
+                                                    break;
+                                                case '46': $back = 'cyan';
+                                                    break;
+                                                case '47': $back = 'white';
+                                                    break;
+                                                    // @codingStandardsIgnoreEnd
 
                                                 default:
                                                     //user_error('Unsupported attribute: ' . $mod);

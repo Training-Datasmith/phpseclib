@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Pure-PHP CMS / KeyTransRecipient Parser
  *
