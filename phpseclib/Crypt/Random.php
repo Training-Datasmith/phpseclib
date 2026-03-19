@@ -50,17 +50,13 @@ abstract class Random
 
         try {
             return random_bytes($length);
-        } catch (\Exception) {
-            // random_compat will throw an Exception, which in PHP 5 does not implement Throwable
-        } catch (\Throwable) {
-            // If a sufficient source of randomness is unavailable, random_bytes() will throw an
-            // object that implements the Throwable interface (Exception, TypeError, Error).
-            // We don't actually need to do anything here. The string() method should just continue
-            // as normal. Note, however, that if we don't have a sufficient source of randomness for
-            // random_bytes(), most of the other calls here will fail too, so we'll end up using
-            // the PHP implementation.
+        } catch (\Exception $e) {
+            throw new RuntimeException('random_bytes() failed: a sufficient source of randomness is unavailable. ' . $e->getMessage(), 0, $e);
+        } catch (\Throwable $e) {
+            throw new RuntimeException('random_bytes() failed: a sufficient source of randomness is unavailable. ' . $e->getMessage(), 0, $e);
         }
-        // at this point we have no choice but to use a pure-PHP CSPRNG
+        // The following pure-PHP CSPRNG fallback is intentionally unreachable.
+        // It is preserved for reference only; random_bytes() failure now throws.
 
         // cascade entropy across multiple PHP instances by fixing the session and collecting all
         // environmental variables, including the previous session data and the current session

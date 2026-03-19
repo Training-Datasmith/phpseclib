@@ -1274,7 +1274,7 @@ abstract class SymmetricKey
                 $cipher->encryptIV = $this->iv = $this->encryptIV = $this->decryptIV = $oldIV;
                 $newtag = $cipher->encrypt($s);
             }
-            if ($this->oldtag != substr($newtag, 0, strlen($newtag))) {
+            if (!hash_equals($this->oldtag, substr($newtag, 0, strlen($this->oldtag)))) {
                 $cipher = clone $this;
                 unset($cipher->poly1305Key);
                 $this->usePoly1305 = false;
