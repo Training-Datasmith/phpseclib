@@ -93,10 +93,18 @@ abstract class RSA extends AsymmetricKey
     public const ENCRYPTION_OAEP = 1;
 
     /**
-     * Use PKCS#1 padding.
+     * Use PKCS#1 v1.5 padding for encryption.
      *
-     * Although self::PADDING_OAEP / self::PADDING_PSS  offers more security, including PKCS#1 padding is necessary for purposes of backwards
-     * compatibility with protocols (like SSH-1) written before OAEP's introduction.
+     * Although self::ENCRYPTION_OAEP offers more security, PKCS#1 v1.5 padding is
+     * included for backwards compatibility with protocols (such as SSH-1 and legacy TLS)
+     * written before OAEP's introduction.
+     *
+     * @deprecated since 3.0.0 — Use ENCRYPTION_OAEP for all new code.
+     *             PKCS#1 v1.5 encryption is vulnerable to Bleichenbacher's adaptive
+     *             chosen-ciphertext attack (CCA2); see https://link.springer.com/chapter/10.1007/BFb0055716
+     *
+     * @security This constant is retained for interoperability only.  OAEP provides
+     *           a tight security proof against CCA2 attackers; PKCS#1 v1.5 does not.
      *
      * @see self::encrypt()
      * @see self::decrypt()
@@ -104,10 +112,16 @@ abstract class RSA extends AsymmetricKey
     public const ENCRYPTION_PKCS1 = 2;
 
     /**
-     * Do not use any padding
+     * Do not use any padding (raw RSA).
      *
-     * Although this method is not recommended it can none-the-less sometimes be useful if you're trying to decrypt some legacy
-     * stuff, if you're trying to diagnose why an encrypted message isn't decrypting, etc.
+     * Raw RSA is deterministic (same plaintext always produces the same ciphertext
+     * for a given key), textbook-malleable, and not semantically secure.  It exists
+     * only for legacy interoperability and low-level diagnostics.
+     *
+     * @deprecated since 3.0.0 — Use ENCRYPTION_OAEP for all new code.
+     *
+     * @security Raw RSA is deterministic and malleable.  Do not use it in production
+     *           code unless you fully understand the security implications.
      *
      * @see self::encrypt()
      * @see self::decrypt()
@@ -138,7 +152,17 @@ abstract class RSA extends AsymmetricKey
     public const SIGNATURE_RELAXED_PKCS1 = 32;
 
     /**
-     * Use PKCS#1 padding for signature verification
+     * Use PKCS#1 v1.5 padding for signature generation and verification.
+     *
+     * Provided for interoperability with systems that require RSASSA-PKCS1-V1_5.
+     * PSS (SIGNATURE_PSS) should be preferred for all new designs because it has
+     * a tighter security proof and is not susceptible to hash-substitution attacks.
+     *
+     * @deprecated since 3.0.0 — Use SIGNATURE_PSS for all new code.
+     *
+     * @security PKCS#1 v1.5 signatures are deterministic and have known weaknesses
+     *           under certain conditions.  Prefer SIGNATURE_PSS which uses random
+     *           salt for probabilistic signing.
      *
      * @see self::sign()
      * @see self::verify()

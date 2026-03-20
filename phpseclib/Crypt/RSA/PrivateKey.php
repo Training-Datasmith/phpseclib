@@ -162,10 +162,25 @@ final class PrivateKey extends RSA implements Common\PrivateKey
     }
 
     /**
-     * Performs RSA Blinding
+     * Performs RSA Blinding to protect against timing and fault attacks.
      *
-     * Protects against timing attacks by employing RSA Blinding.
-     * Returns $x->modPow($this->exponents[$i], $this->primes[$i])
+     * Blinding multiplies the input $x by r^e mod p before exponentiation and
+     * then removes the blinding factor afterwards.  Even if an attacker can
+     * precisely measure the time taken by modular exponentiation, the random
+     * blinding factor $r changes every call, making timing measurements
+     * statistically useless.
+     *
+     * @security This method implements the counter-measure recommended by
+     *           Paul Kocher (1996) against timing side-channel attacks on RSA.
+     *           Blinding is enabled by default via static::$enableBlinding.
+     *           Do NOT disable blinding in production unless you have verified
+     *           that your environment is not vulnerable to timing attacks.
+     *
+     * @param BigInteger $x  The value to blind-exponentiate.
+     * @param BigInteger $r  A random blinding factor in [1, p-1].
+     * @param int        $i  Index into $this->primes / $this->exponents (1-indexed).
+     *
+     * @return BigInteger x^e mod p with blinding applied and removed.
      */
     private function blind(BigInteger $x, BigInteger $r, int $i): BigInteger
     {
@@ -264,10 +279,31 @@ final class PrivateKey extends RSA implements Common\PrivateKey
     }
 
     /**
-     * Create a signature
+     * Creates an RSA signature over a message or a Signable document.
      *
-     * @see self::verify()
-     * @param string $message
+     * The signing algorithm is determined by the current $signaturePadding:
+     * - SIGNATURE_PSS (default): RSASSA-PSS-SIGN per RFC 3447 §8.1.1.
+     * - SIGNATURE_PKCS1 / SIGNATURE_RELAXED_PKCS1: RSASSA-PKCS1-V1_5-SIGN.
+     *
+     * When $source is a Signable (e.g., a CSR), the public key is embedded in
+     * the document, the signable section is extracted, and the resulting
+     * signature is written back into the document.
+     *
+     * @security PSS uses a random salt on every invocation, making each
+     *           signature non-deterministic even for the same message and key.
+     *           This prevents certain oracle attacks possible against deterministic
+     *           signature schemes.
+     *
+     * @security Private-key exponentiation is performed with RSA blinding
+     *           (see blind()) when static::$enableBlinding is true (the default).
+     *
+     * @param string|Signable $source  The message string or Signable document to sign.
+     *
+     * @return string Raw binary signature.
+     *
+     * @throws LengthException if the RSA modulus is too short for the chosen hash algorithm
+     * @see self::verify() in PublicKey
+     * @since 3.0.0
      */
     public function sign(string|Signable $source): string
     {
@@ -409,9 +445,29 @@ final class PrivateKey extends RSA implements Common\PrivateKey
     }
 
     /**
-     * Decryption
+     * Decrypts an RSA ciphertext with this private key.
      *
-     * @see self::encrypt()
+     * The decryption scheme is determined by $encryptionPadding:
+     * - ENCRYPTION_OAEP (default): RSAES-OAEP-DECRYPT per RFC 3447 §7.1.2.
+     * - ENCRYPTION_PKCS1: RSAES-PKCS1-V1_5-DECRYPT per RFC 3447 §7.2.2.
+     * - ENCRYPTION_NONE: Raw RSA (no padding).
+     *
+     * @security OAEP decryption uses bitwise OR (|) instead of logical OR (||)
+     *           in the final validity check to prevent Manger's chosen-ciphertext
+     *           attack, which exploits early-exit (short-circuit) evaluation to
+     *           distinguish error conditions by timing.
+     *
+     * @security PKCS#1 v1.5 decryption does NOT implement the Bleichenbacher
+     *           counter-measures (RSAES-PKCS1-V1_5 oracle defence).  Prefer OAEP.
+     *
+     * @param string $ciphertext  Raw binary ciphertext produced by PublicKey::encrypt().
+     *
+     * @return string The decrypted plaintext.
+     *
+     * @throws LengthException   if the ciphertext has an incorrect length
+     * @throws RuntimeException  if decryption fails (wrong key or malformed ciphertext)
+     * @see self::encrypt() in PublicKey
+     * @since 3.0.0
      */
     public function decrypt(string $ciphertext): string
     {

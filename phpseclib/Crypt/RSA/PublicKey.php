@@ -264,9 +264,29 @@ final class PublicKey extends RSA implements Common\PublicKey
     }
 
     /**
-     * Verifies a signature
+     * Verifies an RSA signature against a message.
      *
-     * @see self::sign()
+     * The verification algorithm is selected by the current $signaturePadding:
+     * - SIGNATURE_PSS (default): RSASSA-PSS-VERIFY per RFC 3447 §8.1.2.
+     * - SIGNATURE_PKCS1: RSASSA-PKCS1-V1_5-VERIFY per RFC 3447 §8.2.2.
+     * - SIGNATURE_RELAXED_PKCS1: As above but also accepts BER-encoded DigestInfo.
+     *
+     * @security All signature comparison steps use hash_equals() to prevent
+     *           timing side channels.  Do not compare signatures with '==' or
+     *           '==='; always use this method or hash_equals() directly.
+     *
+     * @security PKCS#1 v1.5 signature verification is provided for
+     *           interoperability only.  PSS should be preferred for new designs
+     *           as it has a tight security proof and is not vulnerable to
+     *           Bleichenbacher-style forgery attacks.
+     *
+     * @param string $message   The original message that was signed.
+     * @param string $signature The raw binary signature to verify.
+     *
+     * @return bool True if the signature is valid for the given message and key.
+     *
+     * @see self::sign() in PrivateKey
+     * @throws \phpseclib4\Exception\LengthException if the RSA modulus is too short for the hash algorithm
      */
     public function verify(string $message, string $signature): bool
     {
@@ -394,15 +414,33 @@ final class PublicKey extends RSA implements Common\PublicKey
     }
 
     /**
-     * Encryption
+     * Encrypts a message with this RSA public key.
      *
-     * Both self::PADDING_OAEP and self::PADDING_PKCS1 both place limits on how long $plaintext can be.
-     * If $plaintext exceeds those limits it will be broken up so that it does and the resultant ciphertext's will
-     * be concatenated together.
+     * The encryption scheme is selected by the current $encryptionPadding:
+     * - ENCRYPTION_OAEP (default): RSAES-OAEP per RFC 3447 §7.1.1.  Recommended.
+     * - ENCRYPTION_PKCS1: RSAES-PKCS1-V1_5 per RFC 3447 §7.2.1.  Legacy only.
+     * - ENCRYPTION_NONE: Raw RSA (no padding).  Insecure; avoid in new code.
      *
-     * @return bool|string
-     * @throws LengthException if the RSA modulus is too short
-     * @see self::decrypt()
+     * Both OAEP and PKCS1 padding enforce a maximum plaintext length based on
+     * the key size.  If $plaintext exceeds this limit it is split and each chunk
+     * encrypted independently (chunks are concatenated in the output).
+     *
+     * @security PKCS#1 v1.5 encryption is vulnerable to Bleichenbacher's
+     *           adaptive chosen-ciphertext attack (CCA2).  Use OAEP for all new
+     *           code.  Raw (no-padding) RSA is deterministic and malleable;
+     *           never use it directly.
+     *
+     * @security RSA encryption is designed for small payloads (key wrapping).
+     *           For bulk data use hybrid encryption: encrypt a random AES key
+     *           with RSA, then use AES for the data.
+     *
+     * @param string $plaintext  The data to encrypt; max length depends on key size and padding.
+     *
+     * @return bool|string Raw binary ciphertext, or false on internal error.
+     *
+     * @throws LengthException if the RSA modulus is too short for the chosen padding and message
+     * @see self::decrypt() in PrivateKey
+     * @since 3.0.0
      */
     public function encrypt(string $plaintext)
     {
