@@ -459,6 +459,277 @@ class Hash implements \Stringable
      * @param int $taglen the integer 4, 8, 12 or 16.
      * @return string string of length taglen bytes.
      */
+    private static function sha3_pad(int $padLength, int $padType): string
+    {
+        switch ($padType) {
+            case self::PADDING_KECCAK:
+                $temp = chr(0x01) . str_repeat("\0", $padLength - 1);
+                $temp[$padLength - 1] = $temp[$padLength - 1] | chr(0x80);
+                return $temp;
+            case self::PADDING_SHAKE:
+                $temp = chr(0x1F) . str_repeat("\0", $padLength - 1);
+                $temp[$padLength - 1] = $temp[$padLength - 1] | chr(0x80);
+                return $temp;
+            //case self::PADDING_SHA3:
+            default:
+                // from https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf#page=36
+                return $padLength == 1 ? chr(0x86) : chr(0x06) . str_repeat("\0", $padLength - 2) . chr(0x80);
+        }
+    }
+
+    /**
+     * Pure-PHP 32-bit implementation of SHA3
+     *
+     * Whereas BigInteger.php's 32-bit engine works on PHP 64-bit this 32-bit implementation
+     * of SHA3 will *not* work on PHP 64-bit. This is because this implementation
+     * employees bitwise NOTs and bitwise left shifts. And the round constants only work
+     * on 32-bit PHP. eg. dechex(-2147483648) returns 80000000 on 32-bit PHP and
+     * FFFFFFFF80000000 on 64-bit PHP. Sure, we could do bitwise ANDs but that would slow
+     * things down.
+     *
+     * SHA512 requires BigInteger to simulate 64-bit unsigned integers because SHA2 employees
+     * addition whereas SHA3 just employees bitwise operators. PHP64 only supports signed
+     * 64-bit integers, which complicates addition, whereas that limitation isn't an issue
+     * for SHA3.
+     *
+     * In https://ws680.nist.gov/publication/get_pdf.cfm?pub_id=919061#page=16 KECCAK[C] is
+     * defined as "the KECCAK instance with KECCAK-f[1600] as the underlying permutation and
+     * capacity c". This is relevant because, altho the KECCAK standard defines a mode
+     * (KECCAK-f[800]) designed for 32-bit machines that mode is incompatible with SHA3
+     */
+    private static function sha3_32(string $p, int $c, int $r, int $d, int $padType): string
+    {
+        $block_size = $r >> 3;
+        $padLength = $block_size - (strlen($p) % $block_size);
+        $num_ints = $block_size >> 2;
+
+        $p .= static::sha3_pad($padLength, $padType);
+
+        $n = strlen($p) / $r; // number of blocks
+
+        $s = [
+            [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+            [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+            [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+            [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+            [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]],
+        ];
+
+        $p = str_split($p, $block_size);
+
+        foreach ($p as $pi) {
+            $pi = unpack('V*', $pi);
+            $x = $y = 0;
+            for ($i = 1; $i <= $num_ints; $i += 2) {
+                $s[$x][$y][0] ^= $pi[$i + 1];
+                $s[$x][$y][1] ^= $pi[$i];
+                if (++$y == 5) {
+                    $y = 0;
+                    $x++;
+                }
+            }
+            static::processSHA3Block32($s);
+        }
+
+        $z = '';
+        $i = $j = 0;
+        while (strlen($z) < $d) {
+            $z .= pack('V2', $s[$i][$j][1], $s[$i][$j++][0]);
+            if ($j == 5) {
+                $j = 0;
+                $i++;
+                if ($i == 5) {
+                    $i = 0;
+                    static::processSHA3Block32($s);
+                }
+            }
+        }
+
+        return $z;
+    }
+
+    /**
+     * 32-bit block processing method for SHA3
+     */
+    private static function processSHA3Block32(array &$s): void
+    {
+        static $rotationOffsets = [
+            [ 0,  1, 62, 28, 27],
+            [36, 44,  6, 55, 20],
+            [ 3, 10, 43, 25, 39],
+            [41, 45, 15, 21,  8],
+            [18,  2, 61, 56, 14],
+        ];
+
+        // the standards give these constants in hexadecimal notation. it's tempting to want to use
+        // that same notation, here, however, we can't, because 0x80000000, on PHP32, is a positive
+        // float - not the negative int that we need to be in PHP32. so we use -2147483648 instead
+        static $roundConstants = [
+            [0, 1],
+            [0, 32898],
+            [-2147483648, 32906],
+            [-2147483648, -2147450880],
+            [0, 32907],
+            [0, -2147483647],
+            [-2147483648, -2147450751],
+            [-2147483648, 32777],
+            [0, 138],
+            [0, 136],
+            [0, -2147450871],
+            [0, -2147483638],
+            [0, -2147450741],
+            [-2147483648, 139],
+            [-2147483648, 32905],
+            [-2147483648, 32771],
+            [-2147483648, 32770],
+            [-2147483648, 128],
+            [0, 32778],
+            [-2147483648, -2147483638],
+            [-2147483648, -2147450751],
+            [-2147483648, 32896],
+            [0, -2147483647],
+            [-2147483648, -2147450872],
+        ];
+
+        for ($round = 0; $round < 24; $round++) {
+            // theta step
+            $parity = $rotated = [];
+            for ($i = 0; $i < 5; $i++) {
+                $parity[] = [
+                    $s[0][$i][0] ^ $s[1][$i][0] ^ $s[2][$i][0] ^ $s[3][$i][0] ^ $s[4][$i][0],
+                    $s[0][$i][1] ^ $s[1][$i][1] ^ $s[2][$i][1] ^ $s[3][$i][1] ^ $s[4][$i][1],
+                ];
+                $rotated[] = static::rotateLeft32($parity[$i], 1);
+            }
+
+            $temp = [
+                [$parity[4][0] ^ $rotated[1][0], $parity[4][1] ^ $rotated[1][1]],
+                [$parity[0][0] ^ $rotated[2][0], $parity[0][1] ^ $rotated[2][1]],
+                [$parity[1][0] ^ $rotated[3][0], $parity[1][1] ^ $rotated[3][1]],
+                [$parity[2][0] ^ $rotated[4][0], $parity[2][1] ^ $rotated[4][1]],
+                [$parity[3][0] ^ $rotated[0][0], $parity[3][1] ^ $rotated[0][1]],
+            ];
+            for ($i = 0; $i < 5; $i++) {
+                for ($j = 0; $j < 5; $j++) {
+                    $s[$i][$j][0] ^= $temp[$j][0];
+                    $s[$i][$j][1] ^= $temp[$j][1];
+                }
+            }
+
+            $st = $s;
+
+            // rho and pi steps
+            for ($i = 0; $i < 5; $i++) {
+                for ($j = 0; $j < 5; $j++) {
+                    $st[(2 * $i + 3 * $j) % 5][$j] = static::rotateLeft32($s[$j][$i], $rotationOffsets[$j][$i]);
+                }
+            }
+
+            // chi step
+            for ($i = 0; $i < 5; $i++) {
+                $s[$i][0] = [
+                    $st[$i][0][0] ^ (~$st[$i][1][0] & $st[$i][2][0]),
+                    $st[$i][0][1] ^ (~$st[$i][1][1] & $st[$i][2][1]),
+                ];
+                $s[$i][1] = [
+                    $st[$i][1][0] ^ (~$st[$i][2][0] & $st[$i][3][0]),
+                    $st[$i][1][1] ^ (~$st[$i][2][1] & $st[$i][3][1]),
+                ];
+                $s[$i][2] = [
+                    $st[$i][2][0] ^ (~$st[$i][3][0] & $st[$i][4][0]),
+                    $st[$i][2][1] ^ (~$st[$i][3][1] & $st[$i][4][1]),
+                ];
+                $s[$i][3] = [
+                    $st[$i][3][0] ^ (~$st[$i][4][0] & $st[$i][0][0]),
+                    $st[$i][3][1] ^ (~$st[$i][4][1] & $st[$i][0][1]),
+                ];
+                $s[$i][4] = [
+                    $st[$i][4][0] ^ (~$st[$i][0][0] & $st[$i][1][0]),
+                    $st[$i][4][1] ^ (~$st[$i][0][1] & $st[$i][1][1]),
+                ];
+            }
+
+            // iota step
+            $s[0][0][0] ^= $roundConstants[$round][0];
+            $s[0][0][1] ^= $roundConstants[$round][1];
+        }
+    }
+
+    /**
+     * Rotate 32-bit int
+     */
+    private static function rotateLeft32(array $x, int $shift): array
+    {
+        if ($shift < 32) {
+            [$hi, $lo] = $x;
+        } else {
+            $shift -= 32;
+            [$lo, $hi] = $x;
+        }
+
+        $mask = -1 ^ (-1 << $shift);
+        return [
+            ($hi << $shift) | (($lo >> (32 - $shift)) & $mask),
+            ($lo << $shift) | (($hi >> (32 - $shift)) & $mask),
+        ];
+    }
+
+    /**
+     * Pure-PHP 64-bit implementation of SHA3
+     */
+    private static function sha3_64(string $p, int $c, int $r, int $d, int $padType): string
+    {
+        $block_size = $r >> 3;
+        $padLength = $block_size - (strlen($p) % $block_size);
+        $num_ints = $block_size >> 2;
+
+        $p .= static::sha3_pad($padLength, $padType);
+
+        $n = strlen($p) / $r; // number of blocks
+
+        $s = [
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+        ];
+
+        $p = str_split($p, $block_size);
+
+        foreach ($p as $pi) {
+            $pi = unpack('P*', $pi);
+            $x = $y = 0;
+            foreach ($pi as $subpi) {
+                $s[$x][$y++] ^= $subpi;
+                if ($y == 5) {
+                    $y = 0;
+                    $x++;
+                }
+            }
+            static::processSHA3Block64($s);
+        }
+
+        $z = '';
+        $i = $j = 0;
+        while (strlen($z) < $d) {
+            $z .= pack('P', $s[$i][$j++]);
+            if ($j == 5) {
+                $j = 0;
+                $i++;
+                if ($i == 5) {
+                    $i = 0;
+                    static::processSHA3Block64($s);
+                }
+            }
+        }
+
+        return $z;
+    }
+
+    /**
+     * 64-bit block processing method for SHA3
+     */
     private function uhash(string $m, int $taglen): string
     {
         //

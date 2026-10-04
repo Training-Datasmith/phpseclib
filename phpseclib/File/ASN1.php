@@ -819,7 +819,7 @@ abstract class ASN1
                     break;
                 }
 
-                $value = [];
+                $value = '';
                 foreach ($mapping['children'] as $key => $child) {
                     switch (true) {
                         case is_array($source) && !array_key_exists($key, $source):
