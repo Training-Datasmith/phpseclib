@@ -253,10 +253,10 @@ final class PublicKey extends RSA implements Common\PublicKey
 
         $s2 = $this->os2ip($s);
         $m2 = $this->rsavp1($s2);
-        $em = $this->i2osp($m2, $this->k);
-        if ($em === false) {
+        if ($m2 === false) {
             return false;
         }
+        $em = $this->i2osp($m2, $this->k);
 
         // EMSA-PSS verification
 

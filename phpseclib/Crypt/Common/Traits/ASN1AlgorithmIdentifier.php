@@ -309,8 +309,9 @@ trait ASN1AlgorithmIdentifier
                 } catch (\Exception $e) {
                     throw new RuntimeException('Unable to decode BER', 0, $e);
                 }
-                $meta['meta']['prf'] = $prf['algorithm'];
-                $hash = str_replace('-', '/', substr($prf['algorithm'], 11));
+                $prfAlgorithm = (string) $prf['algorithm'];
+                $meta['meta']['prf'] = $prfAlgorithm;
+                $hash = str_replace('-', '/', substr($prfAlgorithm, 11));
                 $params = [
                     $password,
                     'pbkdf2',

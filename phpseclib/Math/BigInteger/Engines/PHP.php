@@ -1049,6 +1049,8 @@ abstract class PHP extends Engine
         $r_value = &$r->value;
         for ($i = 0, $r_length = count($r_value); $i < $r_length; ++$i) {
             $temp = ~$r_value[$i] & static::MAX_DIGIT;
+            for ($j = 1; ($temp >> $j) & 1; ++$j) {
+            }
             if ($j <= static::BASE) {
                 break;
             }
