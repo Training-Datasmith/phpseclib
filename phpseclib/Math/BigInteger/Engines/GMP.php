@@ -66,6 +66,8 @@ class GMP extends Engine
 
         if ($x instanceof \GMP) {
             $this->value = $x;
+            $this->is_negative = gmp_sign($x) < 0;
+
             return;
         }
 

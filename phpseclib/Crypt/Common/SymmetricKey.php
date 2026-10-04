@@ -200,7 +200,7 @@ abstract class SymmetricKey
      *
      * @see self::__construct()
      */
-    protected string $mode;
+    protected int $mode;
 
     /**
      * The Block Length of the block cipher

@@ -129,6 +129,8 @@ abstract class Engine implements \JsonSerializable, \Stringable
      */
     public function __construct($x = 0, int $base = 10)
     {
+        $this->is_negative = false;
+
         if (!array_key_exists(static::class, static::$zero)) {
             static::$zero[static::class] = null; // Placeholder to prevent infinite loop.
             static::$zero[static::class] = new static(0);
