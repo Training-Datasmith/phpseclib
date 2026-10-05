@@ -670,6 +670,13 @@ class SSH2 implements \Stringable
     private int $log_size;
 
     /**
+     * Timeout
+     *
+     * @see SSH2::setTimeout()
+     */
+    protected int|null $timeout = 10;
+
+    /**
      * Current Timeout
      *
      * @see SSH2::get_channel_packet()
@@ -995,14 +1002,11 @@ class SSH2 implements \Stringable
      *
      * @see self::login()
      */
-    public function __construct($host, int $port = 22, /**
-     * Timeout
-     *
-     * @see SSH2::setTimeout()
-     */
-        protected int|null $timeout = 10)
+    public function __construct($host, int $port = 22, int $timeout = 10)
     {
         self::$connections[$this->getResourceId()] = \WeakReference::create($this);
+
+        $this->timeout = $timeout;
 
         if (is_resource($host)) {
             $this->fsock = $host;

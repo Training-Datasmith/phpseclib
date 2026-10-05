@@ -1051,7 +1051,7 @@ abstract class ASN1
                     default => throw new RuntimeException('Please choose a primitive type or create an ASN1Element for ' . implode('/', $loc)),
                 };
             case self::TYPE_NULL:
-                $value = [];
+                $value = '';
                 break;
             case self::TYPE_NUMERIC_STRING:
             case self::TYPE_TELETEX_STRING:

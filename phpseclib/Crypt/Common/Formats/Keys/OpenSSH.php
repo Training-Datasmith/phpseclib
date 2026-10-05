@@ -172,8 +172,10 @@ abstract class OpenSSH
     /**
      * Wrap a private key appropriately
      */
-    protected static function wrapPrivateKey(string $publicKey, string $privateKey, #[SensitiveParameter] string $password, array $options): string
+    protected static function wrapPrivateKey(string $publicKey, string $privateKey, #[SensitiveParameter] ?string $password, array $options): string
     {
+        $password ??= '';
+
         [, $checkint] = unpack('N', Random::string(4));
 
         $comment = $options['comment'] ?? self::$comment;

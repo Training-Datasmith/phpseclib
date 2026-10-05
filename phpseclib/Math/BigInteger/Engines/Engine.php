@@ -673,6 +673,11 @@ abstract class Engine implements \JsonSerializable, \Stringable
         $e_bits = $e->toBits();
         $e_length = strlen($e_bits);
 
+        // calculate the appropriate window size.
+        // $window_size == 3 if $window_ranges is between 25 and 81, for example.
+        for ($i = 0, $window_size = 1; $i < count($window_ranges) && $e_length > $window_ranges[$i]; ++$window_size, ++$i) {
+        }
+
         $n_value = $n->value;
 
         if (method_exists(static::class, 'generateCustomReduction')) {
@@ -1123,6 +1128,8 @@ abstract class Engine implements \JsonSerializable, \Stringable
      */
     public function createRecurringModuloFunction(): \Closure
     {
+        $class = static::class;
+
         $fqengine = !method_exists(static::$modexpEngine[static::class], 'reduce') ?
             '\\phpseclib4\\Math\\BigInteger\\Engines\\' . static::ENGINE_DIR . '\\DefaultEngine' :
             static::$modexpEngine[static::class];
@@ -1134,6 +1141,7 @@ abstract class Engine implements \JsonSerializable, \Stringable
                 return $r;
             };');
         }
+        $n = $this->value;
         return eval('return function(' . static::class . ' $x) use ($n, $fqengine, $class) {
             $r = new $class();
             $r->value = $fqengine::reduce($x->value, $n, $class);
