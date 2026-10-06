@@ -674,7 +674,7 @@ class SSH2 implements \Stringable
      *
      * @see SSH2::setTimeout()
      */
-    protected int|null $timeout = 10;
+    protected int|null $timeout = null;
 
     /**
      * Current Timeout
@@ -682,13 +682,6 @@ class SSH2 implements \Stringable
      * @see SSH2::get_channel_packet()
      */
     protected int|float|null $curTimeout = null;
-
-    /**
-     * Timeout
-     *
-     * @see SSH2::setTimeout()
-     */
-    protected int|null $timeout = null;
 
     /**
      * Keep Alive Interval
@@ -1014,8 +1007,6 @@ class SSH2 implements \Stringable
         $this->timeout = $timeout;
 
         self::$connections[$this->getResourceId()] = \WeakReference::create($this);
-
-        $this->timeout = $timeout;
 
         if (is_resource($host)) {
             $this->fsock = $host;
