@@ -684,6 +684,13 @@ class SSH2 implements \Stringable
     protected int|float|null $curTimeout = null;
 
     /**
+     * Timeout
+     *
+     * @see SSH2::setTimeout()
+     */
+    protected int|null $timeout = null;
+
+    /**
      * Keep Alive Interval
      *
      * @see self::setKeepAlive()
@@ -1004,6 +1011,8 @@ class SSH2 implements \Stringable
      */
     public function __construct($host, int $port = 22, int $timeout = 10)
     {
+        $this->timeout = $timeout;
+
         self::$connections[$this->getResourceId()] = \WeakReference::create($this);
 
         $this->timeout = $timeout;
